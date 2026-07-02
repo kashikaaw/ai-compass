@@ -2,17 +2,20 @@
 
 > **See what your AI prompt costs before you run it.**
 
+[![Live demo](https://img.shields.io/badge/live_demo-kashikaaw.github.io%2Fai--compass-7c3aed?style=for-the-badge)](https://kashikaaw.github.io/ai-compass/)
+[![Deploy to GitHub Pages](https://github.com/kashikaaw/ai-compass/actions/workflows/deploy.yml/badge.svg)](https://github.com/kashikaaw/ai-compass/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 AI Compass is a consumer-facing web app that inspects an AI prompt _before_ you
 send it: it shows the token count and per-model dollar cost, flags confusing or
 wasteful parts, and rewrites the prompt to be shorter and clearer — with a
-gallery of ready-made templates for common asks (e.g. turning “write me a book”
+gallery of ready-made templates for common asks (e.g. turning "write me a book"
 into a tight, structured prompt).
 
 Everything runs **locally in your browser**. There is no backend, no signup, and
 nothing you type is uploaded.
 
-![AI Compass screenshot placeholder](docs/screenshot.png)
-<!-- Add a screenshot at docs/screenshot.png (or update this path) once deployed. -->
+**[Try it live →](https://kashikaaw.github.io/ai-compass/)**
 
 ---
 
@@ -74,7 +77,8 @@ npm run lint     # run oxlint
 ## Deploy to GitHub Pages
 
 This repo ships a GitHub Actions workflow (`.github/workflows/deploy.yml`) that
-builds and deploys on every push to `main`.
+builds and deploys on every push to `main`. **The live site above is deployed
+this way** — no manual build step required.
 
 1. Push this repository to GitHub.
 2. In the repo, go to **Settings → Pages** and set **Source** to
@@ -84,6 +88,12 @@ builds and deploys on every push to `main`.
 
 The Vite `base` is set to `'./'` (relative), so the app works under any repo path
 without further configuration.
+
+> **If your first deploy fails or hangs:** go to **Settings → Actions →
+> General → Workflow permissions** and make sure **Read and write permissions**
+> is selected. A repo defaulting to read-only can make the `pages: write` /
+> `id-token: write` scopes this workflow requests behave inconsistently on the
+> very first run.
 
 ---
 
