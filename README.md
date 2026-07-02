@@ -1,5 +1,3 @@
-<img width="1512" height="805" alt="image" src="https://github.com/user-attachments/assets/1cb6371c-cefd-4b8c-9deb-e87b8e1a07a4" /># AI Compass
-
 > **See what your AI prompt costs before you run it.**
 
 AI Compass is a consumer-facing web app that inspects an AI prompt _before_ you
