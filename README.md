@@ -133,4 +133,4 @@ src/
 
 ## License
 
-[MIT](LICENSE) © 2026 Kate
+[MIT](LICENSE) © 2026 Kashika Wanchoo
