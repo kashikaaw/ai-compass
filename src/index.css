@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/*
+  AI Compass design system.
+  Dark-first, consumer-product palette. All colors exposed as CSS variables so
+  components can reference them via inline styles or Tailwind arbitrary values.
+*/
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #0a0b12;
+  --bg-2: #0f111a;
+  --surface: #151827;
+  --surface-2: #1c2033;
+  --border: #262b40;
+  --border-strong: #333a55;
+
+  /* Text */
+  --text: #c7ccdd;
+  --text-dim: #8890a8;
+  --text-h: #f4f6fc;
+
+  /* Brand */
+  --brand: #7c5cff;
+  --brand-2: #4dd6ff;
+  --brand-glow: rgba(124, 92, 255, 0.35);
+
+  /* Semantic */
+  --ok: #3ddc97;
+  --warn: #ffb454;
+  --danger: #ff6b8a;
+  --info: #4dd6ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(77, 214, 255, 0.12), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+::selection {
+  background: var(--brand-glow);
+  color: var(--text-h);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+  background-clip: padding-box;
+}
+
+/* Utility: gradient text */
+.text-gradient {
+  background: linear-gradient(100deg, var(--brand-2), var(--brand) 55%, #b98cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Utility: glassy card */
+.glass {
+  background: color-mix(in oklab, var(--surface) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+/* The highlight overlay + textarea must share identical metrics so the
+   colored token layer lines up perfectly behind the transparent text. */
+.pw-shared {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: 0;
+  padding: 20px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  tab-size: 2;
+  border: 0;
+  margin: 0;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
