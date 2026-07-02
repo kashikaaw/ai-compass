@@ -15,7 +15,7 @@ into a tight, structured prompt).
 Everything runs **locally in your browser**. There is no backend, no signup, and
 nothing you type is uploaded.
 
-**[Try it live →](https://kashikaaw.github.io/ai-compass/)**
+<img width="1512" height="805" alt="image" src="https://github.com/user-attachments/assets/e7682be0-9399-4f35-8c67-ea6146a3d900" />
 
 ---
 
@@ -128,4 +128,4 @@ src/
 
 ## License
 
-[MIT](LICENSE) © 2026 Kate
+[MIT](LICENSE) © 2026 Kashika Wanchoo
