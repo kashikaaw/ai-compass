@@ -348,5 +348,36 @@ export function detectConfusion(text: string): Flag[] {
     return true
   })
   unique.sort((a, b) => a.start - b.start)
-  return unique
+
+  // Merge overlapping spans of the same category so the user doesn't see the
+  // same underlying issue flagged twice (e.g. "i would like you to please" and
+  // "i would like you to" both matching the same run of text). We keep the
+  // widest span and prefer the longer matched text for the chip.
+  const merged: Flag[] = []
+  for (const f of unique) {
+    // Whole-prompt flags (zero-length spans like the format hint) never merge.
+    if (f.end <= f.start) {
+      merged.push(f)
+      continue
+    }
+    const prev = merged[merged.length - 1]
+    if (
+      prev &&
+      prev.category === f.category &&
+      prev.end > prev.start &&
+      f.start < prev.end // spans overlap
+    ) {
+      // Keep the longer of the two matched phrases as the representative flag.
+      if (f.end - f.start > prev.end - prev.start) {
+        prev.match = f.match
+        prev.label = f.label
+        prev.explanation = f.explanation
+        prev.suggestion = f.suggestion
+      }
+      prev.end = Math.max(prev.end, f.end)
+      continue
+    }
+    merged.push({ ...f })
+  }
+  return merged
 }

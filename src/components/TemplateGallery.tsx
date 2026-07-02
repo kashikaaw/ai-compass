@@ -172,7 +172,13 @@ function TemplateModal({
               onClick={() => {
                 const merged: Record<string, string> = {}
                 for (const f of template.fields) {
-                  merged[f.key] = values[f.key] ?? f.defaultValue ?? ''
+                  // Prefer what the user typed; if they left a field blank, fall
+                  // back to its default and then to the placeholder they saw in
+                  // the field — never to generic filler. This guarantees the real
+                  // field values (or the concrete examples shown to the user) are
+                  // interpolated into the assembled prompt.
+                  const typed = values[f.key]?.trim()
+                  merged[f.key] = typed || f.defaultValue || f.placeholder || ''
                 }
                 onUse(template.assemble(merged))
               }}

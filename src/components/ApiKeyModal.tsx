@@ -78,10 +78,10 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
                 </span>
                 <div className="text-left">
                   <h3 className="text-base font-semibold" style={{ color: 'var(--text-h)' }}>
-                    AI Boost — your Anthropic key
+                    AI Boost
                   </h3>
                   <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                    Optional. Powers smarter rewrites with Claude Haiku 4.5.
+                    Smarter rewrites powered by Claude Haiku 4.5.
                   </p>
                 </div>
               </div>

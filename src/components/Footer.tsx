@@ -18,8 +18,7 @@ export function Footer() {
           Token counts use the o200k_base tokenizer as a universal estimate —
           exact tokenization varies by model/provider. Prices are estimates
           (updated {PRICING_LAST_UPDATED}); verify at each provider's docs before
-          budgeting. AI Boost is optional and calls Anthropic directly with your
-          own key.
+          budgeting.
         </p>
 
         <a

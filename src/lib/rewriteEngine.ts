@@ -47,8 +47,12 @@ const STRIP_PHRASES: Array<[RegExp, string]> = [
   [/\bkindly\b/gi, ''],
   [/\bfeel free to\b/gi, ''],
   [/\bif you could,?\b/gi, ''],
+  [/\bthanks so much\b/gi, ''],
   [/\bthanks in advance\b/gi, ''],
+  [/\bthanks a lot\b/gi, ''],
+  [/\bmany thanks\b/gi, ''],
   [/\bthank you( very much)?\b/gi, ''],
+  [/\bthanks\b/gi, ''],
   [/\bneedless to say,?\b/gi, ''],
   [/\bit is important to note that\b/gi, ''],
   [/\bbasically,?\b/gi, ''],
@@ -75,12 +79,24 @@ const TIGHTEN: Array<[RegExp, string]> = [
 ]
 
 function cleanupWhitespace(s: string): string {
-  return s
-    .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\s+([.,;:!?])/g, '$1')
-    .replace(/\n{3,}/g, '\n\n')
-    .replace(/^\s+/gm, (m) => (m.includes('\n') ? m : ''))
-    .trim()
+  return (
+    s
+      // Collapse runs of spaces/tabs left behind by removed words.
+      .replace(/[ \t]{2,}/g, ' ')
+      // Drop a space that now sits before punctuation ("good ," -> "good,").
+      .replace(/[ \t]+([.,;:!?])/g, '$1')
+      // Collapse duplicated punctuation created by removals (",," / ", ,").
+      .replace(/([,;:])(\s*[,;:])+/g, '$1')
+      // Remove a comma/semicolon that has been orphaned right before a sentence
+      // end or the end of the string ("interesting and good, ." -> "...good.").
+      .replace(/[,;:]+\s*([.!?])/g, '$1')
+      .replace(/[,;:]+\s*$/g, '')
+      // Remove a stray leading comma/space at the very start or after a newline.
+      .replace(/(^|\n)[ \t]*[,;:]+[ \t]*/g, '$1')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/^\s+/gm, (m) => (m.includes('\n') ? m : ''))
+      .trim()
+  )
 }
 
 /** Capitalize the first letter of each sentence after cleanup. */

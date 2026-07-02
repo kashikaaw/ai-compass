@@ -10,6 +10,7 @@ import {
   Loader2,
   KeyRound,
   RefreshCw,
+  LayoutTemplate,
 } from 'lucide-react'
 import { ruleBasedRewrite, wordDiff, type RewriteResult, type DiffPart } from '../lib/rewriteEngine'
 import { countTokens } from '../lib/tokenizer'
@@ -157,43 +158,75 @@ export function RewritePanel({
             exit={{ opacity: 0 }}
             className="flex flex-col gap-4"
           >
-            {/* savings callout */}
+            {/* savings / structure callout */}
             {stats && (
-              <div
-                className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl p-3"
-                style={{ background: 'rgba(61,220,151,0.1)' }}
-              >
-                <Stat
-                  icon={<TrendingDown size={16} style={{ color: stats.delta >= 0 ? 'var(--ok)' : 'var(--warn)' }} />}
-                  main={`${stats.delta >= 0 ? '↓' : '↑'} ${Math.abs(stats.pct)}% tokens`}
-                  sub={`${stats.beforeTok} → ${stats.afterTok}`}
-                />
-                <Stat
-                  icon={<span style={{ color: 'var(--ok)' }}>$</span>}
-                  main={`${stats.costDelta >= 0 ? 'save ' : '+'}${formatUSD(Math.abs(stats.costDelta))}/call`}
-                  sub={`on ${HEADLINE_MODEL.name}`}
-                />
-                {result.archetype && (
+              result.archetype ? (
+                // Template-swap path: a structured template is intentionally
+                // longer than a vague one-liner, so DON'T frame the token
+                // increase as a failure. Present it as "more complete".
+                <div
+                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl p-3"
+                  style={{ background: 'rgba(96,165,250,0.10)' }}
+                >
                   <span
-                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                    style={{ background: 'var(--surface-2)', color: 'var(--brand-2)' }}
-                  >
-                    <Sparkles size={12} /> {result.archetype} template
-                  </span>
-                )}
-                {result.engine === 'ai-boost' && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
                     style={{ background: 'var(--brand)', color: '#fff' }}
                   >
-                    <Sparkles size={12} /> AI Boost
+                    <LayoutTemplate size={12} /> Template applied
                   </span>
-                )}
-              </div>
+                  <Stat
+                    icon={<LayoutTemplate size={16} style={{ color: 'var(--brand-2)' }} />}
+                    main={`${stats.afterTok} tokens`}
+                    sub="longer, but structured & more complete"
+                  />
+                  <Stat
+                    icon={<span style={{ color: 'var(--text-dim)' }}>$</span>}
+                    main={`${formatUSD(stats.costAfter)}/call`}
+                    sub={`on ${HEADLINE_MODEL.name}`}
+                  />
+                  <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
+                    A clear, structured prompt usually gets it right the first try —
+                    fewer re-runs than a vague one-liner.
+                  </span>
+                  {result.engine === 'ai-boost' && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                      style={{ background: 'var(--brand)', color: '#fff' }}
+                    >
+                      <Sparkles size={12} /> AI Boost
+                    </span>
+                  )}
+                </div>
+              ) : (
+                // Trim-only path: genuine token savings — keep the green framing.
+                <div
+                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl p-3"
+                  style={{ background: stats.delta >= 0 ? 'rgba(61,220,151,0.1)' : 'rgba(255,180,84,0.1)' }}
+                >
+                  <Stat
+                    icon={<TrendingDown size={16} style={{ color: stats.delta >= 0 ? 'var(--ok)' : 'var(--warn)' }} />}
+                    main={`${stats.delta >= 0 ? '↓' : '↑'} ${Math.abs(stats.pct)}% tokens`}
+                    sub={`${stats.beforeTok} → ${stats.afterTok}`}
+                  />
+                  <Stat
+                    icon={<span style={{ color: 'var(--ok)' }}>$</span>}
+                    main={`${stats.costDelta >= 0 ? 'save ' : '+'}${formatUSD(Math.abs(stats.costDelta))}/call`}
+                    sub={`on ${HEADLINE_MODEL.name}`}
+                  />
+                  {result.engine === 'ai-boost' && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                      style={{ background: 'var(--brand)', color: '#fff' }}
+                    >
+                      <Sparkles size={12} /> AI Boost
+                    </span>
+                  )}
+                </div>
+              )
             )}
 
             {/* before / after */}
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid min-w-0 gap-3 md:grid-cols-2">
               <Panel title="Before" tone="dim">
                 <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed" style={{ color: 'var(--text-dim)' }}>
                   {result.original}

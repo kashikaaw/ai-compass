@@ -57,7 +57,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="flex min-h-svh w-full max-w-full flex-col overflow-x-hidden">
       <Hero />
 
       {/* Workbench + live analysis */}
@@ -103,8 +103,12 @@ export default function App() {
                 className="flex flex-col gap-4"
               >
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <CostTable tokens={tokens} />
-                  <ConfusionFlags flags={flags} hasText={hasText} />
+                  <div className="min-w-0">
+                    <CostTable tokens={tokens} />
+                  </div>
+                  <div className="min-w-0">
+                    <ConfusionFlags flags={flags} hasText={hasText} />
+                  </div>
                 </div>
 
                 <RewritePanel

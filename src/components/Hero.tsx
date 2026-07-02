@@ -57,7 +57,7 @@ export function Hero() {
         <Feature icon="⚡" label="Live cost as you type" />
         <Feature icon="🖍️" label="Marks up expensive tokens" />
         <Feature icon="✂️" label="One-click optimize" />
-        <Feature icon={<Sparkles size={13} style={{ color: 'var(--brand-2)' }} />} label="Optional AI Boost" />
+        <Feature icon={<Sparkles size={13} style={{ color: 'var(--brand-2)' }} />} label="AI Boost" />
       </motion.div>
     </header>
   )

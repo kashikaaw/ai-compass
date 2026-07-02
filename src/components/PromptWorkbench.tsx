@@ -116,10 +116,10 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
         ) : (
           <span>Turn on the Heatmap to see which words split into the most (priciest) tokens.</span>
         )}
-        {spanFlags.length > 0 && (
+        {flags.length > 0 && (
           <span className="inline-flex items-center gap-1">
             <AlertTriangle size={12} style={{ color: 'var(--warn)' }} />
-            {spanFlags.length} issue{spanFlags.length === 1 ? '' : 's'} underlined
+            {flags.length} issue{flags.length === 1 ? '' : 's'} found
           </span>
         )}
       </div>
