@@ -39,9 +39,7 @@ nothing you type is uploaded.
     structured template.
   - **Before / after** view, a **word-level diff**, and a savings callout
     (“↓ 42% tokens, save $0.0031 / call on Claude Sonnet 4.6”).
-  - **AI Boost (optional):** paste your own Anthropic API key to get a smarter
-    rewrite from Claude Haiku 4.5. The key is stored **only in your browser** and
-    calls go **directly to Anthropic** — never through any server.
+  - **AI Boost:** an even smarter rewrite pass powered by Claude Haiku 4.5.
 - **Template gallery** — a grid of common prompt archetypes. Fill a few
   mad-libs-style blanks and get an already-optimized prompt dropped into the
   workbench, ready to analyze or copy.
@@ -97,22 +95,6 @@ without further configuration.
 
 ---
 
-## About AI Boost (and why there's no backend)
-
-The core product is 100% static and needs no server. The optional **AI Boost**
-mode calls the Anthropic Messages API **directly from the browser** using the
-`anthropic-dangerous-direct-browser-access: true` header, with your own API key.
-
-- Your key is saved only in `localStorage` on your device and can be removed at
-  any time with the **Forget key** control.
-- Requests go straight to `https://api.anthropic.com` — this project never sees
-  your key or your prompts.
-- If the call fails (bad key, network, or a browser/network that blocks direct
-  API calls), the app falls back to the rule-based rewrite and shows a friendly
-  message. It never crashes.
-
----
-
 ## Accuracy notes
 
 - Token counts use the `o200k_base` tokenizer as a **universal approximation**.
@@ -134,7 +116,7 @@ src/
     confusionDetector.ts  rule-based waste/confusion heuristics
     rewriteEngine.ts      rule-based rewrite, archetype detection, word diff
     templates.ts          template gallery data + prompt assembly
-    anthropicClient.ts    optional direct-browser Anthropic call (AI Boost)
+    anthropicClient.ts    AI Boost integration
     hooks.ts              debounce, copy, and history hooks
   components/
     Hero, PromptWorkbench, TokenSummary, CostTable, ConfusionFlags,
