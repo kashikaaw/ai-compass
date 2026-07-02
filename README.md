@@ -1,4 +1,4 @@
-# AI Compass
+<img width="1512" height="805" alt="image" src="https://github.com/user-attachments/assets/1cb6371c-cefd-4b8c-9deb-e87b8e1a07a4" /># AI Compass
 
 > **See what your AI prompt costs before you run it.**
 
@@ -11,8 +11,7 @@ into a tight, structured prompt).
 Everything runs **locally in your browser**. There is no backend, no signup, and
 nothing you type is uploaded.
 
-![AI Compass screenshot placeholder](docs/screenshot.png)
-<!-- Add a screenshot at docs/screenshot.png (or update this path) once deployed. -->
+<img width="1512" height="805" alt="image" src="https://github.com/user-attachments/assets/e7682be0-9399-4f35-8c67-ea6146a3d900" />
 
 ---
 
