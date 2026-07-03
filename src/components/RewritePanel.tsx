@@ -17,6 +17,7 @@ import { countTokens } from '../lib/tokenizer'
 import { MODELS, roundTripCost, formatUSD } from '../lib/pricing'
 import { aiBoostRewrite, AiBoostError, hasKey, hasAnyKey, getBoostProvider, PROVIDER_LABEL } from '../lib/aiBoostClient'
 import { useCopy } from '../lib/hooks'
+import { InfoTooltip } from './InfoTooltip'
 
 interface Props {
   original: string
@@ -110,11 +111,21 @@ export function RewritePanel({
       className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
+        <h3 className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
           Optimize
+          <InfoTooltip label="What Optimize does">
+            Rewrites your prompt to cut wasted words and add missing structure, so you get a
+            similar answer for fewer tokens. Free and instant by default (rule-based). Turn on
+            AI Boost to have a real model rephrase it for an even sharper result.
+          </InfoTooltip>
         </h3>
         <div className="flex items-center gap-2">
           <AiBoostToggle enabled={aiBoostEnabled} onToggle={onToggleAiBoost} onOpenKeyModal={onOpenKeyModal} />
+          <InfoTooltip label="What this button does">
+            {result
+              ? 'Runs Optimize again with your current settings (rule-based, or AI Boost if it’s on) and replaces the result below.'
+              : 'Runs the optimizer on your prompt above and shows a before/after comparison.'}
+          </InfoTooltip>
           <button
             type="button"
             onClick={() => void runOptimize()}
@@ -373,6 +384,11 @@ function AiBoostToggle({
         <Sparkles size={14} />
         AI Boost
       </button>
+      <InfoTooltip label="What AI Boost does">
+        Sends your prompt to {providerLabel} — using your own API key, straight from your
+        browser — for a real rewrite that fixes grammar, tone, and phrasing the free optimizer
+        can't. Nothing is sent unless this is switched on.
+      </InfoTooltip>
       <button
         type="button"
         onClick={onOpenKeyModal}

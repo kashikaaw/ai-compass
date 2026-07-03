@@ -149,7 +149,13 @@ export default function App() {
                   onToggleAiBoost={setAiBoost}
                 />
 
-                <History items={items} onSelect={(t) => loadPrompt(t)} onClear={clear} sessionTotal={sessionTotal} />
+                <History
+                  items={items}
+                  onSelect={(t) => loadPrompt(t)}
+                  onClear={clear}
+                  sessionTotal={sessionTotal}
+                  authConfigured={auth.configured}
+                />
               </motion.div>
             )}
           </AnimatePresence>

@@ -14,11 +14,9 @@ export function Footer() {
         </div>
 
         <p className="max-w-xl leading-relaxed">
-          Everything runs locally in your browser. Nothing you type is uploaded.
-          Token counts use the o200k_base tokenizer as a universal estimate —
-          exact tokenization varies by model/provider. Prices are estimates
-          (updated {PRICING_LAST_UPDATED}); verify at each provider's docs before
-          budgeting.
+          Runs entirely in your browser — nothing you type is ever uploaded.
+          Costs are estimates (updated {PRICING_LAST_UPDATED}); check each
+          provider's docs before budgeting.
         </p>
 
         <a

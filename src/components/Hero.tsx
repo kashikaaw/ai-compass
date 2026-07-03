@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Compass, Sparkles, Cloud, LogOut, Check } from 'lucide-react'
 import type { useAuth } from '../lib/hooks'
+import { InfoTooltip } from './InfoTooltip'
 
 interface HeroProps {
   /** Auth state; only rendered when Supabase is configured + ready. */
@@ -49,9 +50,6 @@ export function Hero({ auth, onOpenAuth }: HeroProps) {
         >
           <Compass size={14} style={{ color: 'var(--md-primary)' }} />
           AI Compass
-          <span aria-hidden style={{ color: 'var(--md-outline)' }}>·</span>
-          <span className="hidden sm:inline">no signup · runs in your browser</span>
-          <span className="sm:hidden">free · private</span>
         </span>
       </motion.div>
 
@@ -140,16 +138,29 @@ function HeroAuthControl({
 
   if (!auth.email) {
     return (
-      <button
-        type="button"
-        onClick={onOpenAuth}
-        className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-sm transition-all duration-200"
-        style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
-      >
-        <Cloud size={13} />
-        <span className="hidden sm:inline">Sign in to sync</span>
-        <span className="sm:hidden">Sign in</span>
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onOpenAuth}
+          className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-sm transition-all duration-200"
+          style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+        >
+          <Cloud size={13} />
+          <span className="hidden sm:inline">Sign in to sync</span>
+          <span className="sm:hidden">Sign in</span>
+        </button>
+        <span
+          className="hidden rounded-full p-1 shadow-sm sm:inline-flex"
+          style={{ background: 'var(--md-secondary-container)' }}
+        >
+          <InfoTooltip label="What signing in gets you">
+            Free, passwordless sign-in (we just email you a one-time link — no password to
+            remember). It saves your prompt history and running cost total to your account, so
+            both follow you to any device instead of resetting per browser. Everything still
+            works fully without it.
+          </InfoTooltip>
+        </span>
+      </div>
     )
   }
 

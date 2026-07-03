@@ -10,6 +10,7 @@ import {
   roundTripCost,
   type ModelPricing,
 } from '../lib/pricing'
+import { InfoTooltip } from './InfoTooltip'
 
 interface Props {
   tokens: number
@@ -61,12 +62,16 @@ export function CostTable({ tokens }: Props) {
     >
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div className="text-left">
-          <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
+          <h3 className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
             Cost per call
+            <InfoTooltip label="What this table shows">
+              What it would cost to send this exact prompt once and get a typical reply back —
+              per model, so you can compare providers before you spend anything. Estimates only:
+              counts use one universal tokenizer, so treat these as close approximations.
+            </InfoTooltip>
           </h3>
           <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
-            Your {tokens.toLocaleString()} input tokens + an assumed{' '}
-            {ASSUMED_OUTPUT}-token reply.
+            {tokens.toLocaleString()} input tokens + a typical {ASSUMED_OUTPUT}-token reply.
           </p>
         </div>
         <span
@@ -111,12 +116,6 @@ export function CostTable({ tokens }: Props) {
       {tokens > 0 && cheapest && (
         <UsageProjection model={cheapest.model} perCall={cheapest.roundtrip} />
       )}
-
-      <p className="mt-3 text-left text-[10px] leading-relaxed" style={{ color: 'var(--text-dim)' }}>
-        Token counts use the o200k_base tokenizer as a universal estimate. Claude and
-        Gemini use different tokenizers, so their counts are close approximations,
-        not exact. Verify current pricing at each provider's docs.
-      </p>
     </motion.div>
   )
 }

@@ -3,15 +3,18 @@ import { History as HistoryIcon, Trash2, CornerDownLeft } from 'lucide-react'
 import type { HistoryItem, SessionTotal } from '../lib/hooks'
 import { SESSION_MODEL } from '../lib/hooks'
 import { formatUSD } from '../lib/pricing'
+import { InfoTooltip } from './InfoTooltip'
 
 interface Props {
   items: HistoryItem[]
   onSelect: (text: string) => void
   onClear: () => void
   sessionTotal: SessionTotal
+  /** Whether cloud sign-in is available at all (Supabase configured). */
+  authConfigured?: boolean
 }
 
-export function History({ items, onSelect, onClear, sessionTotal }: Props) {
+export function History({ items, onSelect, onClear, sessionTotal, authConfigured }: Props) {
   if (items.length === 0) return null
 
   return (
@@ -22,9 +25,15 @@ export function History({ items, onSelect, onClear, sessionTotal }: Props) {
       className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
+        <h3 className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
           <HistoryIcon size={15} style={{ color: 'var(--md-on-surface-variant)' }} />
           Recent prompts
+          <InfoTooltip label="What this list is">
+            Prompts you've analyzed on this device, saved so you can revisit or reuse them —
+            click one to load it back in.
+            {authConfigured &&
+              ' Sign in (top right) to keep this list, and your running total below, across every device instead of just this browser.'}
+          </InfoTooltip>
         </h3>
         <button
           type="button"
