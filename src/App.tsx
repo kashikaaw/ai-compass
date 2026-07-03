@@ -12,9 +12,11 @@ import { TemplateGallery } from './components/TemplateGallery'
 import { ApiKeyModal } from './components/ApiKeyModal'
 import { History } from './components/History'
 import { Footer } from './components/Footer'
+import { ClarifyBanner, ClarifyFlow } from './components/ClarifyFlow'
 
 import { countTokens } from './lib/tokenizer'
 import { detectConfusion } from './lib/confusionDetector'
+import { shouldOfferClarify } from './lib/clarifyFlow'
 import { useDebounced, useHistory } from './lib/hooks'
 
 const EXAMPLE =
@@ -27,10 +29,14 @@ export default function App() {
   const [aiBoost, setAiBoost] = useState(false)
   const [, forceRender] = useState(0)
 
+  // Guided Q&A ("Clarify") flow state.
+  const [clarifyOpen, setClarifyOpen] = useState(false)
+  const [clarifyDismissed, setClarifyDismissed] = useState(false)
+
   const workbenchRef = useRef<HTMLDivElement>(null)
 
   const debounced = useDebounced(prompt, 300)
-  const { items, add, clear } = useHistory()
+  const { items, add, clear, sessionTotal } = useHistory()
 
   // Live analysis (debounced heavy work).
   const tokens = useMemo(() => countTokens(debounced), [debounced])
@@ -41,6 +47,15 @@ export default function App() {
   )
   const chars = debounced.length
   const hasText = debounced.trim().length > 0
+
+  // Whether to offer the guided Q&A banner for the current (vague) prompt.
+  const offerClarify = useMemo(() => shouldOfferClarify(debounced), [debounced])
+
+  // Reset the "dismissed" state whenever the prompt text meaningfully changes,
+  // so a new vague prompt gets a fresh chance to surface the suggestion.
+  useEffect(() => {
+    setClarifyDismissed(false)
+  }, [debounced])
 
   // Record to history when a prompt settles (debounced) and is substantial.
   useEffect(() => {
@@ -70,6 +85,17 @@ export default function App() {
             showHeat={showHeat}
             onToggleHeat={setShowHeat}
           />
+
+          {/* guided Q&A suggestion for vague prompts */}
+          <AnimatePresence>
+            {offerClarify && !clarifyDismissed && !clarifyOpen && (
+              <ClarifyBanner
+                key="clarify-banner"
+                onStart={() => setClarifyOpen(true)}
+                onDismiss={() => setClarifyDismissed(true)}
+              />
+            )}
+          </AnimatePresence>
 
           {/* quick-start row */}
           {!hasText && (
@@ -119,7 +145,7 @@ export default function App() {
                   onToggleAiBoost={setAiBoost}
                 />
 
-                <History items={items} onSelect={(t) => loadPrompt(t)} onClear={clear} />
+                <History items={items} onSelect={(t) => loadPrompt(t)} onClear={clear} sessionTotal={sessionTotal} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -134,6 +160,13 @@ export default function App() {
         open={keyModalOpen}
         onClose={() => setKeyModalOpen(false)}
         onSaved={() => forceRender((n) => n + 1)}
+      />
+
+      <ClarifyFlow
+        open={clarifyOpen}
+        original={prompt}
+        onClose={() => setClarifyOpen(false)}
+        onApply={(assembled) => loadPrompt(assembled, false)}
       />
     </div>
   )
