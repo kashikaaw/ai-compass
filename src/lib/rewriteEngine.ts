@@ -418,7 +418,29 @@ Be objective; separate fact from inference. Target ~500 words.`,
   },
 ]
 
+// Archetype-swapping replaces the ENTIRE prompt with a generic template, which
+// is only safe for a bare, vague one-liner ("write me a book about dragons").
+// A longer, already-composed prompt can incidentally mention an archetype
+// keyword once (e.g. quoting "write me a book about X" as an example inside a
+// much longer, unrelated prompt) — swapping the whole thing out in that case
+// destroys real content the user wrote. So archetype detection is gated to
+// prompts that actually look like a bare ask: short, and not already
+// deliberately structured.
+const MAX_ARCHETYPE_WORDS = 40
+
+/** Whether `text` already looks like a deliberately composed, structured prompt. */
+function looksAlreadyStructured(text: string): boolean {
+  const hasParagraphBreak = /\n\s*\n/.test(text)
+  const hasLabeledSection = /(^|\n)\s*[A-Z][A-Za-z ]{2,20}:\s*(\n|$)/.test(text)
+  const hasXml = /<[a-zA-Z][\w-]*>[\s\S]*<\/[a-zA-Z][\w-]*>/.test(text)
+  const hasFence = /```/.test(text) || /(^|\n)#{1,6}\s/.test(text)
+  const hasNumberedList = /(^|\n)\s*\d+[.)]\s/.test(text)
+  return hasParagraphBreak || hasLabeledSection || hasXml || hasFence || hasNumberedList
+}
+
 export function detectArchetype(prompt: string): Archetype | null {
+  const words = prompt.trim().split(/\s+/).filter(Boolean).length
+  if (words > MAX_ARCHETYPE_WORDS || looksAlreadyStructured(prompt)) return null
   for (const a of ARCHETYPES) {
     if (a.keywords.test(prompt)) return a
   }

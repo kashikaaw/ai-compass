@@ -15,7 +15,12 @@ import { AiBoostError } from './aiBoostError'
 
 const STORAGE_KEY = 'ai-compass:openai-key'
 const API_URL = 'https://api.openai.com/v1/chat/completions'
-const MODEL = 'gpt-5-4-nano' // matches pricing.ts id — fast & cheap, mirrors Claude Haiku's role for Anthropic
+// NOTE: OpenAI's real API model strings use dot notation for the version
+// (e.g. "gpt-5.5", "gpt-5.2"), not the kebab-case id pricing.ts uses for its
+// own internal id field ("gpt-5-4-nano") — using the kebab-case form here
+// caused a live 404 ("model does not exist"). This must match pricing.ts's
+// display `name` ("GPT-5.4-nano"), lowercased, not its `id`.
+const MODEL = 'gpt-5.4-nano' // fast & cheap, mirrors Claude Haiku's role for Anthropic
 
 export function getStoredKey(): string | null {
   try {
