@@ -1,6 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, Info } from 'lucide-react'
 import { CATEGORY_META, type Flag } from '../lib/confusionDetector'
+
+const ANTHROPIC_DOCS_URL =
+  'https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices'
 
 interface Props {
   flags: Flag[]
@@ -16,8 +19,34 @@ export function ConfusionFlags({ flags, hasText }: Props) {
       className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
+        <h3 className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
           Prompt inspector
+          <span
+            className="group relative inline-flex"
+            tabIndex={0}
+            aria-label="About these checks"
+          >
+            <Info size={13} style={{ color: 'var(--md-on-surface-variant)' }} />
+            {/* hover/focus tooltip crediting the source of the heuristics */}
+            <span
+              className="pointer-events-none absolute left-1/2 top-6 z-10 w-64 -translate-x-1/2 rounded-xl p-2.5 text-left text-[11px] leading-relaxed opacity-0 shadow-lg transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus:pointer-events-auto group-focus:opacity-100"
+              style={{ background: 'var(--md-surface-container)', color: 'var(--text)' }}
+              role="tooltip"
+            >
+              Some checks are informed by{' '}
+              <a
+                href={ANTHROPIC_DOCS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="pointer-events-auto underline"
+                style={{ color: 'var(--md-primary)' }}
+              >
+                Anthropic’s prompting best practices
+              </a>{' '}
+              (clear/direct wording, examples, structure, explicit output format).
+              These are heuristic hints — not an official or certified linter.
+            </span>
+          </span>
         </h3>
         <span
           className="rounded-full px-2.5 py-0.5 text-xs font-medium"

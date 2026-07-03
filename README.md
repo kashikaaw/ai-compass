@@ -43,7 +43,18 @@ for development, and as the GitHub repository secrets `VITE_SUPABASE_URL` and
 - **Prompt inspector** — rule-based heuristics flag and underline:
   filler / politeness padding, vague adjectives, ambiguous pronoun references,
   redundant phrasing, likely contradictions, missing output-format constraints,
-  and run-on sentences — each with a plain-English “why it matters.”
+  run-on sentences, complex/creative asks with no example given, and long
+  prompts with no structure/delimiters — each with a plain-English
+  “why it matters.” Several of these heuristics are **informed by Anthropic’s
+  official prompting best-practices guidance** (be clear and direct, use
+  examples/few-shot, structure complex prompts with XML tags or delimiters,
+  specify the desired output format) — see
+  [Claude prompt engineering](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices).
+- **Analyze your past prompts** — upload an exported ChatGPT
+  (`conversations.json`) or Claude data export and get an aggregate read on
+  your own prompting: most common issues, priciest prompts by token count, and
+  example before/after rewrites. Parsed entirely in your browser — the file
+  never leaves your device.
 - **One-click Optimize**
   - A **rule-based rewrite engine** (zero setup) strips waste, tightens phrasing,
     adds output constraints, and — when it recognizes your intent (book, essay,
