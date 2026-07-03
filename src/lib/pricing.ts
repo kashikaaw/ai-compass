@@ -117,10 +117,17 @@ export const MODELS: ModelPricing[] = [
   },
 ]
 
+/**
+ * Provider accent dots, retinted to sit inside the MD3 light-lavender palette.
+ * Kept desaturated and similar in lightness to --md-tertiary (#7d5260) so they
+ * read as part of the same tonal system rather than raw brand hex, while still
+ * being distinct hues so users can tell providers apart at a glance:
+ *   Anthropic → muted clay/terracotta, OpenAI → muted sage, Google → muted slate-blue.
+ */
 export const PROVIDER_ACCENT: Record<Provider, string> = {
-  Anthropic: '#d97757',
-  OpenAI: '#10a37f',
-  Google: '#4285f4',
+  Anthropic: '#a86b5c',
+  OpenAI: '#5f7d63',
+  Google: '#5f6f9c',
 }
 
 /** Cost of a single input-only call (i.e. just the prompt) for one model. */
