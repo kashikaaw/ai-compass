@@ -10,7 +10,7 @@ import {
 import { countTokens } from '../lib/tokenizer'
 import { SESSION_MODEL, sessionPromptCost } from '../lib/hooks'
 import { formatUSD } from '../lib/pricing'
-import { aiBoostRewrite, AiBoostError, hasKey } from '../lib/anthropicClient'
+import { aiBoostRewrite, AiBoostError, hasAnyKey, getBoostProvider, PROVIDER_LABEL } from '../lib/aiBoostClient'
 
 /* ------------------------------ trigger banner ---------------------------- */
 
@@ -167,7 +167,7 @@ export function ClarifyFlow({ open, original, onClose, onApply, onOpenKeyModal }
   // open so the user can retry or fall back to the plain "Build my prompt".
   const buildAndPolish = async () => {
     setBoostError(null)
-    if (!hasKey()) {
+    if (!hasAnyKey()) {
       onOpenKeyModal()
       return
     }
@@ -374,7 +374,11 @@ export function ClarifyFlow({ open, original, onClose, onApply, onOpenKeyModal }
                     type="button"
                     onClick={buildAndPolish}
                     disabled={boosting}
-                    title={hasKey() ? 'Assemble then rewrite with Claude' : 'Add your Anthropic key to polish with AI'}
+                    title={
+                      hasAnyKey()
+                        ? `Assemble then rewrite with ${PROVIDER_LABEL[getBoostProvider()]}`
+                        : 'Add an API key (Claude or ChatGPT) to polish with AI'
+                    }
                     className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-medium transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                     style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
                   >

@@ -1,26 +1,21 @@
 /**
- * anthropicClient.ts
+ * openaiClient.ts
  * -----------------------------------------------------------------------------
- * Optional "AI Boost" mode. Calls the Anthropic Messages API DIRECTLY from the
- * browser using the user's own API key.
+ * Optional "AI Boost" mode, OpenAI variant. Calls the OpenAI Chat Completions
+ * API DIRECTLY from the browser using the user's own API key.
  *
- * Privacy model:
- *  - The key is stored ONLY in localStorage on this device.
- *  - Requests go straight to https://api.anthropic.com — never through any
+ * Mirrors anthropicClient.ts exactly (same privacy model, same shape) so the
+ * two providers are interchangeable from the UI's point of view:
+ *  - The key is stored ONLY in localStorage on this device, under its own key
+ *    so it never collides with (or gets sent to) the Anthropic key.
+ *  - Requests go straight to https://api.openai.com — never through any
  *    server of ours (there is no server; this is a static app).
- *  - The `anthropic-dangerous-direct-browser-access` header is required for
- *    Anthropic to accept browser-origin requests.
- *
- * We use Claude Haiku 4.5 — fast and cheap — to produce a smarter rewrite than
- * the rule engine can.
  */
 import { AiBoostError } from './aiBoostError'
-export { AiBoostError }
 
-const STORAGE_KEY = 'ai-compass:anthropic-key'
-const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-haiku-4-5' // matches pricing.ts id
-const API_VERSION = '2023-06-01'
+const STORAGE_KEY = 'ai-compass:openai-key'
+const API_URL = 'https://api.openai.com/v1/chat/completions'
+const MODEL = 'gpt-5-4-nano' // matches pricing.ts id — fast & cheap, mirrors Claude Haiku's role for Anthropic
 
 export function getStoredKey(): string | null {
   try {
@@ -65,12 +60,12 @@ Rules:
 Respond with ONLY the rewritten prompt text. No preamble, no explanation, no code fences.`
 
 /**
- * Ask Claude Haiku to rewrite the prompt. Resolves to the rewritten string.
- * Throws AiBoostError with a friendly message on any failure.
+ * Ask an OpenAI chat model to rewrite the prompt. Resolves to the rewritten
+ * string. Throws AiBoostError with a friendly message on any failure.
  */
 export async function aiBoostRewrite(prompt: string, apiKey?: string): Promise<string> {
   const key = (apiKey ?? getStoredKey())?.trim()
-  if (!key) throw new AiBoostError('No API key set. Add your Anthropic key to use AI Boost.')
+  if (!key) throw new AiBoostError('No API key set. Add your OpenAI key to use AI Boost.')
 
   let res: Response
   try {
@@ -78,26 +73,21 @@ export async function aiBoostRewrite(prompt: string, apiKey?: string): Promise<s
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': API_VERSION,
-        'anthropic-dangerous-direct-browser-access': 'true',
+        authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
+        max_completion_tokens: 1024,
         messages: [
-          {
-            role: 'user',
-            content: `Rewrite this prompt:\n\n"""\n${prompt}\n"""`,
-          },
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: `Rewrite this prompt:\n\n"""\n${prompt}\n"""` },
         ],
       }),
     })
   } catch {
     // Network error or CORS rejection lands here.
     throw new AiBoostError(
-      'Could not reach Anthropic. Check your connection. Some networks/extensions block direct browser API calls.',
+      'Could not reach OpenAI. Check your connection. Some networks/extensions block direct browser API calls.',
     )
   }
 
@@ -118,34 +108,30 @@ export async function aiBoostRewrite(prompt: string, apiKey?: string): Promise<s
     if (res.status === 400) {
       throw new AiBoostError(`Request rejected (400)${detail}.`)
     }
-    throw new AiBoostError(`Anthropic returned an error (${res.status})${detail}.`)
+    throw new AiBoostError(`OpenAI returned an error (${res.status})${detail}.`)
   }
 
   let data: unknown
   try {
     data = await res.json()
   } catch {
-    throw new AiBoostError('Got an unreadable response from Anthropic.')
+    throw new AiBoostError('Got an unreadable response from OpenAI.')
   }
 
   const text = extractText(data)
-  if (!text) throw new AiBoostError('Anthropic returned an empty rewrite. Try again.')
+  if (!text) throw new AiBoostError('OpenAI returned an empty rewrite. Try again.')
   return text.trim()
 }
 
-interface AnthropicContentBlock {
-  type: string
-  text?: string
+interface OpenAiChoice {
+  message?: { content?: string | null }
 }
-interface AnthropicResponse {
-  content?: AnthropicContentBlock[]
+interface OpenAiResponse {
+  choices?: OpenAiChoice[]
 }
 
 function extractText(data: unknown): string {
-  const resp = data as AnthropicResponse
-  if (!resp?.content || !Array.isArray(resp.content)) return ''
-  return resp.content
-    .filter((b) => b.type === 'text' && typeof b.text === 'string')
-    .map((b) => b.text as string)
-    .join('')
+  const resp = data as OpenAiResponse
+  const content = resp?.choices?.[0]?.message?.content
+  return typeof content === 'string' ? content : ''
 }

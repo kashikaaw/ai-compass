@@ -15,7 +15,7 @@ import {
 import { ruleBasedRewrite, wordDiff, type RewriteResult, type DiffPart } from '../lib/rewriteEngine'
 import { countTokens } from '../lib/tokenizer'
 import { MODELS, roundTripCost, formatUSD } from '../lib/pricing'
-import { aiBoostRewrite, AiBoostError, hasKey } from '../lib/anthropicClient'
+import { aiBoostRewrite, AiBoostError, hasKey, hasAnyKey, getBoostProvider, PROVIDER_LABEL } from '../lib/aiBoostClient'
 import { useCopy } from '../lib/hooks'
 
 interface Props {
@@ -43,11 +43,16 @@ export function RewritePanel({
 
   const hasText = original.trim().length > 0
 
-  const runOptimize = async () => {
+  // `boostOverride` lets a caller force AI Boost on for this single run even
+  // before the `aiBoostEnabled` prop has re-rendered (e.g. the "Try AI Boost"
+  // nudge below toggles it on and re-runs in the same click handler, when the
+  // prop update wouldn't have landed yet).
+  const runOptimize = async (boostOverride?: boolean) => {
     setError(null)
     const ruleResult = ruleBasedRewrite(original)
+    const useBoost = boostOverride ?? aiBoostEnabled
 
-    if (aiBoostEnabled) {
+    if (useBoost) {
       if (!hasKey()) {
         onOpenKeyModal()
         return
@@ -60,7 +65,7 @@ export function RewritePanel({
           rewritten: boosted,
           archetype: ruleResult.archetype,
           changes: [
-            'Rewritten by Claude Haiku 4.5 (AI Boost).',
+            `Rewritten by ${PROVIDER_LABEL[getBoostProvider()]} (AI Boost).`,
             'Removed filler, tightened phrasing, and imposed clear structure.',
           ],
           engine: 'ai-boost',
@@ -112,7 +117,7 @@ export function RewritePanel({
           <AiBoostToggle enabled={aiBoostEnabled} onToggle={onToggleAiBoost} onOpenKeyModal={onOpenKeyModal} />
           <button
             type="button"
-            onClick={runOptimize}
+            onClick={() => void runOptimize()}
             disabled={!hasText || loading}
             className="md-state md-focus inline-flex h-10 items-center gap-2 rounded-full px-6 text-sm font-medium transition-all duration-300 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             style={{
@@ -216,12 +221,12 @@ export function RewritePanel({
                     <button
                       type="button"
                       onClick={() => {
-                        if (!hasKey()) {
+                        if (!hasAnyKey()) {
                           onOpenKeyModal()
                           return
                         }
                         onToggleAiBoost(true)
-                        void runOptimize()
+                        void runOptimize(true)
                       }}
                       className="md-state md-focus ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-medium transition-all duration-200"
                       style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
@@ -348,16 +353,17 @@ function AiBoostToggle({
   onOpenKeyModal: () => void
 }) {
   const keyed = hasKey()
+  const providerLabel = PROVIDER_LABEL[getBoostProvider()]
   return (
     <div className="flex items-center gap-1.5">
       <button
         type="button"
         onClick={() => {
-          if (!enabled && !keyed) onOpenKeyModal()
+          if (!enabled && !hasAnyKey()) onOpenKeyModal()
           onToggle(!enabled)
         }}
         aria-pressed={enabled}
-        title="Use your own Anthropic key for a smarter rewrite"
+        title={`Use your own ${providerLabel} key for a smarter rewrite (choose provider in the key manager)`}
         className="md-state md-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-xs font-medium transition-all duration-200"
         style={{
           background: enabled ? 'var(--md-primary)' : 'var(--md-secondary-container)',
@@ -370,8 +376,8 @@ function AiBoostToggle({
       <button
         type="button"
         onClick={onOpenKeyModal}
-        aria-label={keyed ? 'API key set — manage it' : 'Add your Anthropic API key'}
-        title={keyed ? 'API key set — manage it' : 'Add your Anthropic API key'}
+        aria-label={keyed ? `${providerLabel} key set — manage it` : 'Add an API key (Claude or ChatGPT)'}
+        title={keyed ? `${providerLabel} key set — manage it` : 'Add an API key (Claude or ChatGPT)'}
         className="md-state md-focus inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200"
         style={{
           background: 'var(--md-secondary-container)',

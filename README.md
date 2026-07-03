@@ -63,7 +63,10 @@ for development, and as the GitHub repository secrets `VITE_SUPABASE_URL` and
     structured template.
   - **Before / after** view, a **word-level diff**, and a savings callout
     (“↓ 42% tokens, save $0.0031 / call on Claude Sonnet 4.6”).
-  - **AI Boost:** an even smarter rewrite pass powered by Claude Haiku 4.5.
+  - **AI Boost:** an even smarter rewrite pass powered by a real model call —
+    pick Claude Haiku 4.5 (Anthropic) or GPT-5.4-nano (OpenAI), whichever you
+    already have a key for. Each key is stored separately, only in your
+    browser, and sent directly to that provider — never to any server of ours.
 - **Template gallery** — a grid of common prompt archetypes. Fill a few
   mad-libs-style blanks and get an already-optimized prompt dropped into the
   workbench, ready to analyze or copy.
@@ -140,7 +143,9 @@ src/
     confusionDetector.ts  rule-based waste/confusion heuristics
     rewriteEngine.ts      rule-based rewrite, archetype detection, word diff
     templates.ts          template gallery data + prompt assembly
-    anthropicClient.ts    AI Boost integration
+    anthropicClient.ts    AI Boost — Anthropic (Claude) provider
+    openaiClient.ts       AI Boost — OpenAI (ChatGPT) provider
+    aiBoostClient.ts      AI Boost — unified provider dispatch
     hooks.ts              debounce, copy, and history hooks
   components/
     Hero, PromptWorkbench, TokenSummary, CostTable, ConfusionFlags,
