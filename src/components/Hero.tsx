@@ -1,9 +1,25 @@
-import { motion } from 'framer-motion'
-import { Compass, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Compass, Sparkles, Cloud, LogOut, Check } from 'lucide-react'
+import type { useAuth } from '../lib/hooks'
 
-export function Hero() {
+interface HeroProps {
+  /** Auth state; only rendered when Supabase is configured + ready. */
+  auth?: ReturnType<typeof useAuth>
+  /** Opens the full magic-link sign-in modal. */
+  onOpenAuth?: () => void
+}
+
+export function Hero({ auth, onOpenAuth }: HeroProps) {
   return (
     <header className="relative overflow-hidden px-6 pt-14 pb-8 text-center sm:pt-24">
+      {/* Persistent sign-in / synced affordance, top-right, visible without
+          scrolling. Only shown when cloud sync is actually configured. */}
+      {auth?.configured && auth.ready && (
+        <div className="absolute right-3 top-3 z-20 sm:right-5 sm:top-5">
+          <HeroAuthControl auth={auth} onOpenAuth={onOpenAuth} />
+        </div>
+      )}
       {/* signature decorative blur shapes — atmospheric tonal depth (MD3) */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
@@ -85,5 +101,104 @@ function Feature({ icon, label }: { icon: React.ReactNode; label: string }) {
       <span aria-hidden>{icon}</span>
       {label}
     </span>
+  )
+}
+
+/**
+ * Top-right auth affordance.
+ * - Signed out: a pill that opens the full magic-link modal.
+ * - Signed in: a "Synced" pill that toggles a tiny popover showing the email
+ *   and a one-click "Sign out" — so signing out doesn't require reopening the
+ *   whole sign-in modal.
+ */
+function HeroAuthControl({
+  auth,
+  onOpenAuth,
+}: {
+  auth: ReturnType<typeof useAuth>
+  onOpenAuth?: () => void
+}) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // Close the popover on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('mousedown', onDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('mousedown', onDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
+
+  if (!auth.email) {
+    return (
+      <button
+        type="button"
+        onClick={onOpenAuth}
+        className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-sm transition-all duration-200"
+        style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+      >
+        <Cloud size={13} />
+        <span className="hidden sm:inline">Sign in to sync</span>
+        <span className="sm:hidden">Sign in</span>
+      </button>
+    )
+  }
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setMenuOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium shadow-sm transition-all duration-200"
+        style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+      >
+        <Check size={13} style={{ color: 'var(--ok)' }} />
+        <span className="max-w-[9rem] truncate">Synced · {auth.email}</span>
+      </button>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.15 }}
+            role="menu"
+            className="absolute right-0 mt-2 w-60 rounded-2xl p-2 text-left shadow-lg"
+            style={{ background: 'var(--md-surface-container)' }}
+          >
+            <div className="px-2 py-1.5 text-[11px] leading-snug" style={{ color: 'var(--text-dim)' }}>
+              Signed in as
+              <div className="truncate font-medium" style={{ color: 'var(--text-h)' }}>
+                {auth.email}
+              </div>
+            </div>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false)
+                void auth.signOut()
+              }}
+              className="md-ghost md-focus mt-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors duration-200"
+              style={{ color: 'var(--danger)' }}
+            >
+              <LogOut size={14} /> Sign out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

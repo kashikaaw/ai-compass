@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Cloud } from 'lucide-react'
 import './App.css'
 
 import { Hero } from './components/Hero'
@@ -10,6 +9,7 @@ import { CostTable } from './components/CostTable'
 import { ConfusionFlags } from './components/ConfusionFlags'
 import { RewritePanel } from './components/RewritePanel'
 import { TemplateGallery } from './components/TemplateGallery'
+import { HistoryImport } from './components/HistoryImport'
 import { ApiKeyModal } from './components/ApiKeyModal'
 import { AuthPanel } from './components/AuthPanel'
 import { History } from './components/History'
@@ -77,7 +77,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-svh w-full max-w-full flex-col overflow-x-hidden">
-      <Hero />
+      <Hero auth={auth} onOpenAuth={() => setAuthPanelOpen(true)} />
 
       {/* Workbench + live analysis */}
       <main ref={workbenchRef} className="mx-auto w-full max-w-5xl scroll-mt-4 px-4 sm:px-6">
@@ -153,27 +153,17 @@ export default function App() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Upload an exported chat history and analyze your own past prompts
+              with the existing engine — fully client-side. Always available. */}
+          <HistoryImport onUsePrompt={(t) => loadPrompt(t)} />
         </div>
       </main>
 
       <TemplateGallery onUseTemplate={(p) => loadPrompt(p)} />
 
-      {/* Optional cloud sign-in entry point — only shown when Supabase is
-          configured (env vars set). Fully hidden otherwise, so a fresh clone
-          without a backend never sees a broken feature. */}
-      {auth.configured && auth.ready && (
-        <div className="mx-auto -mb-2 flex w-full max-w-5xl justify-center px-4 pt-2 sm:px-6">
-          <button
-            type="button"
-            onClick={() => setAuthPanelOpen(true)}
-            className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200"
-            style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
-          >
-            <Cloud size={13} />
-            {auth.email ? `Synced · ${auth.email}` : 'Sign in to sync across devices'}
-          </button>
-        </div>
-      )}
+      {/* Cloud sign-in / sync now lives in the Hero (top-right), so it's visible
+          without scrolling. See <Hero auth=… onOpenAuth=… /> above. */}
 
       <Footer />
 
