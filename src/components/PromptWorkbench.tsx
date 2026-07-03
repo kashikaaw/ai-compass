@@ -71,8 +71,13 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
         </div>
       </div>
 
-      {/* editor stack: overlay div behind, transparent textarea in front */}
-      <div className="relative">
+      {/* editor stack: overlay div behind, transparent textarea in front.
+          The MD3 filled-field look (tonal fill + rounded top + bottom accent
+          border) lives on THIS WRAPPER — not the textarea — so the textarea's
+          own background can stay genuinely transparent and let the colored
+          heat overlay paint through it. :focus-within carries the focus
+          bottom-border color when the textarea inside is focused. */}
+      <div className="md-field relative overflow-hidden">
         <div
           ref={overlayRef}
           aria-hidden
@@ -84,7 +89,10 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
           {'​'}
         </div>
         {/* MD3 filled text field — kept MONOSPACE (.pw-shared) so the token
-            heat overlay stays pixel-aligned; a deliberate exception to Roboto. */}
+            heat overlay stays pixel-aligned; a deliberate exception to Roboto.
+            Background is forced transparent (inline, since .pw-shared/.md-field
+            don't set it here) so the overlay div behind it always shows
+            through, regardless of DOM paint order. */}
         <textarea
           ref={taRef}
           value={value}
@@ -92,8 +100,12 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
           spellCheck={false}
           placeholder="Try: write me a book about a detective who can taste lies…"
-          className="pw-shared md-field relative block h-[240px] w-full resize-y sm:h-[280px]"
+          className="pw-shared relative block h-[240px] w-full resize-y sm:h-[280px]"
           style={{
+            // Transparent background lets the overlay div (painted behind, but
+            // earlier in the DOM) show through even when this textarea paints on
+            // top of it. Without this, .md-field's opaque tonal fill hid it.
+            background: 'transparent',
             // When the heat overlay renders visible text, hide the textarea's
             // own glyphs so only the colored overlay shows (caret stays visible).
             color: 'var(--text-h)',
