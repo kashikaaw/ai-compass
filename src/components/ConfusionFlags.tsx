@@ -13,13 +13,16 @@ export function ConfusionFlags({ flags, hasText }: Props) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.05 }}
-      className="glass rounded-2xl p-4 sm:p-5"
+      className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-h)' }}>
+        <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
           Prompt inspector
         </h3>
-        <span className="text-xs" style={{ color: 'var(--text-dim)' }}>
+        <span
+          className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+          style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+        >
           {flags.length} flag{flags.length === 1 ? '' : 's'}
         </span>
       </div>
@@ -33,8 +36,8 @@ export function ConfusionFlags({ flags, hasText }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex items-center gap-2 rounded-xl p-3 text-sm"
-            style={{ background: 'rgba(61,220,151,0.1)', color: 'var(--ok)' }}
+            className="flex items-center gap-2 rounded-2xl p-3 text-sm font-medium"
+            style={{ background: 'color-mix(in srgb, var(--ok) 12%, transparent)', color: 'var(--ok)' }}
           >
             <CheckCircle2 size={18} />
             Clean prompt — no filler, vagueness, or structure issues detected.
@@ -59,21 +62,21 @@ function FlagRow({ flag }: { flag: Flag }) {
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0 }}
-      className="rounded-xl p-3 text-left"
-      style={{ background: 'var(--surface-2)', borderLeft: `3px solid ${meta.color}` }}
+      className="rounded-2xl p-3 text-left"
+      style={{ background: 'var(--md-surface-container-low)', borderLeft: `4px solid ${meta.color}` }}
     >
       <div className="mb-1 flex flex-wrap items-center gap-2">
         <span
-          className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-          style={{ background: `${meta.color}22`, color: meta.color }}
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
+          style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
         >
-          <AlertTriangle size={10} />
+          <AlertTriangle size={10} style={{ color: meta.color }} />
           {meta.label}
         </span>
         {flag.match && (
           <code
-            className="rounded px-1.5 py-0.5 font-mono text-[11px]"
-            style={{ background: 'var(--bg-2)', color: 'var(--text)' }}
+            className="rounded-full px-2 py-0.5 font-mono text-[11px]"
+            style={{ background: 'var(--md-surface)', color: 'var(--text)' }}
           >
             {flag.match}
           </code>
@@ -97,8 +100,8 @@ function Empty({ text, muted }: { text: string; muted?: boolean }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="rounded-xl p-4 text-center text-sm"
-      style={{ color: muted ? 'var(--text-dim)' : 'var(--text)', background: 'var(--surface-2)' }}
+      className="rounded-2xl p-4 text-center text-sm"
+      style={{ color: muted ? 'var(--text-dim)' : 'var(--text)', background: 'var(--md-surface-container-low)' }}
     >
       {text}
     </motion.div>

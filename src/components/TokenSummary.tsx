@@ -45,17 +45,22 @@ function Stat({
 }) {
   return (
     <div
-      className="glass flex flex-col items-start gap-1 rounded-xl p-3"
-      style={{ border: `1px solid ${accent ? 'var(--brand)' : 'var(--border)'}` }}
+      className="flex flex-col items-start gap-1 rounded-3xl p-4 shadow-sm transition-shadow duration-300 hover:shadow-md"
+      style={{
+        background: accent ? 'var(--md-secondary-container)' : 'var(--md-surface-container)',
+      }}
     >
-      <span style={{ color: accent ? 'var(--brand-2)' : 'var(--text-dim)' }}>{icon}</span>
+      <span style={{ color: accent ? 'var(--md-primary)' : 'var(--md-on-surface-variant)' }}>{icon}</span>
       <span
-        className="font-mono text-lg font-bold leading-none sm:text-xl"
-        style={{ color: 'var(--text-h)' }}
+        className="font-mono text-lg font-medium leading-none sm:text-xl"
+        style={{ color: accent ? 'var(--md-on-secondary-container)' : 'var(--text-h)' }}
       >
         {value}
       </span>
-      <span className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-dim)' }}>
+      <span
+        className="text-[10px] font-medium uppercase tracking-wide"
+        style={{ color: accent ? 'var(--md-on-secondary-container)' : 'var(--text-dim)' }}
+      >
         {label}
       </span>
     </div>

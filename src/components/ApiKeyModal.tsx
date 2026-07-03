@@ -56,7 +56,7 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
           exit={{ opacity: 0 }}
           onClick={onClose}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(5,6,12,0.7)', backdropFilter: 'blur(4px)' }}
+          style={{ background: 'color-mix(in srgb, var(--md-on-surface) 40%, transparent)', backdropFilter: 'blur(4px)' }}
         >
           <motion.div
             key="modal"
@@ -65,19 +65,19 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
             exit={{ opacity: 0, scale: 0.96, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-md rounded-2xl p-6"
-            style={{ border: '1px solid var(--border-strong)' }}
+            className="w-full max-w-md rounded-[28px] p-6 shadow-lg"
+            style={{ background: 'var(--md-surface-container)' }}
           >
             <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: 'var(--brand)', color: '#fff' }}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full"
+                  style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                 >
                   <KeyRound size={18} />
                 </span>
                 <div className="text-left">
-                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-h)' }}>
+                  <h3 className="text-base font-medium" style={{ color: 'var(--text-h)' }}>
                     AI Boost
                   </h3>
                   <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
@@ -88,8 +88,9 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg p-1.5 transition-colors hover:brightness-150"
-                style={{ color: 'var(--text-dim)' }}
+                aria-label="Close"
+                className="md-ghost md-focus inline-flex h-10 w-10 items-center justify-center rounded-full"
+                style={{ color: 'var(--md-on-surface-variant)' }}
               >
                 <X size={18} />
               </button>
@@ -97,8 +98,8 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
 
             {/* privacy callout */}
             <div
-              className="mb-4 flex gap-2 rounded-xl p-3 text-left text-xs leading-relaxed"
-              style={{ background: 'rgba(61,220,151,0.08)', color: 'var(--text)' }}
+              className="mb-4 flex gap-2 rounded-2xl p-3 text-left text-xs leading-relaxed"
+              style={{ background: 'color-mix(in srgb, var(--ok) 10%, transparent)', color: 'var(--text)' }}
             >
               <ShieldCheck size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--ok)' }} />
               <span>
@@ -119,14 +120,15 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
                 placeholder="sk-ant-..."
                 autoComplete="off"
                 spellCheck={false}
-                className="w-full rounded-xl px-3 py-2.5 pr-10 font-mono text-sm outline-none"
-                style={{ background: 'var(--bg-2)', color: 'var(--text-h)', border: '1px solid var(--border)' }}
+                className="md-field w-full px-3 py-2.5 pr-12 font-mono text-sm"
+                style={{ color: 'var(--text-h)' }}
               />
               <button
                 type="button"
                 onClick={() => setReveal((r) => !r)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5"
-                style={{ color: 'var(--text-dim)' }}
+                aria-label={reveal ? 'Hide API key' : 'Show API key'}
+                className="md-ghost md-focus absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full"
+                style={{ color: 'var(--md-on-surface-variant)' }}
                 title={reveal ? 'Hide' : 'Show'}
               >
                 {reveal ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -137,8 +139,8 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
               href="https://console.anthropic.com/settings/keys"
               target="_blank"
               rel="noopener noreferrer"
-              className="mb-4 inline-flex items-center gap-1 text-[11px] transition-colors hover:brightness-150"
-              style={{ color: 'var(--brand-2)' }}
+              className="md-focus mb-4 inline-flex items-center gap-1 rounded-full py-1 text-[11px] font-medium transition-colors duration-200"
+              style={{ color: 'var(--md-primary)' }}
             >
               Get a key from the Anthropic Console <ExternalLink size={11} />
             </a>
@@ -148,8 +150,8 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
                 type="button"
                 onClick={handleSave}
                 disabled={value.trim().length < 10}
-                className="flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ background: 'linear-gradient(100deg, var(--brand-2), var(--brand))', color: '#fff' }}
+                className="md-state md-focus inline-flex h-12 flex-1 items-center justify-center rounded-full px-6 text-sm font-medium transition-all duration-300 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
               >
                 Save key
               </button>
@@ -157,8 +159,8 @@ export function ApiKeyModal({ open, onClose, onSaved }: Props) {
                 <button
                   type="button"
                   onClick={handleForget}
-                  className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors hover:brightness-125"
-                  style={{ background: 'rgba(255,107,138,0.12)', color: 'var(--danger)' }}
+                  className="md-state md-focus inline-flex h-12 items-center gap-1.5 rounded-full px-5 text-sm font-medium transition-all duration-300 active:scale-95"
+                  style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', color: 'var(--danger)' }}
                 >
                   <Trash2 size={15} /> Forget
                 </button>

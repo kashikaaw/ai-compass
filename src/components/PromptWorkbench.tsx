@@ -49,10 +49,10 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
   }
 
   return (
-    <div className="glass rounded-2xl p-3 shadow-2xl sm:p-4" style={{ boxShadow: '0 20px 60px -20px var(--brand-glow)' }}>
+    <div className="glass rounded-[24px] p-4 shadow-lg sm:p-5">
       {/* toolbar */}
-      <div className="mb-2 flex items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-dim)' }}>
+      <div className="mb-3 flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
           <span className="hidden sm:inline">Your prompt</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -76,13 +76,15 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
         <div
           ref={overlayRef}
           aria-hidden
-          className="pw-shared pointer-events-none absolute inset-0 h-full overflow-hidden rounded-xl"
+          className="pw-shared pointer-events-none absolute inset-0 h-full overflow-hidden rounded-t-[12px]"
           style={{ color: overlayShowsText ? 'var(--text-h)' : 'transparent' }}
         >
           {highlighted}
           {/* zero-width char so a trailing newline keeps its line box */}
           {'​'}
         </div>
+        {/* MD3 filled text field — kept MONOSPACE (.pw-shared) so the token
+            heat overlay stays pixel-aligned; a deliberate exception to Roboto. */}
         <textarea
           ref={taRef}
           value={value}
@@ -90,15 +92,13 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
           spellCheck={false}
           placeholder="Try: write me a book about a detective who can taste lies…"
-          className="pw-shared relative block h-[240px] w-full resize-y rounded-xl outline-none sm:h-[280px]"
+          className="pw-shared md-field relative block h-[240px] w-full resize-y sm:h-[280px]"
           style={{
             // When the heat overlay renders visible text, hide the textarea's
             // own glyphs so only the colored overlay shows (caret stays visible).
             color: 'var(--text-h)',
             WebkitTextFillColor: overlayShowsText ? 'transparent' : 'var(--text-h)',
-            caretColor: 'var(--brand-2)',
-            background: 'color-mix(in oklab, var(--bg-2) 55%, transparent)',
-            border: '1px solid var(--border)',
+            caretColor: 'var(--md-primary)',
           }}
         />
       </div>
@@ -149,8 +149,8 @@ function ToolbarButton({
     <button
       type="button"
       {...rest}
-      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40"
-      style={{ color: 'var(--text-dim)', background: 'var(--surface-2)' }}
+      className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40"
+      style={{ color: 'var(--md-on-secondary-container)', background: 'var(--md-secondary-container)' }}
     >
       {children}
     </button>
@@ -167,10 +167,10 @@ function ToolbarToggle({
       type="button"
       aria-pressed={active}
       {...rest}
-      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:brightness-125"
+      className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200"
       style={{
-        color: active ? 'var(--text-h)' : 'var(--text-dim)',
-        background: active ? 'var(--brand)' : 'var(--surface-2)',
+        color: active ? 'var(--md-on-primary)' : 'var(--md-on-secondary-container)',
+        background: active ? 'var(--md-primary)' : 'var(--md-secondary-container)',
       }}
     >
       {children}

@@ -102,10 +102,10 @@ export function RewritePanel({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="glass rounded-2xl p-4 sm:p-5"
+      className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-h)' }}>
+        <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
           Optimize
         </h3>
         <div className="flex items-center gap-2">
@@ -114,11 +114,10 @@ export function RewritePanel({
             type="button"
             onClick={runOptimize}
             disabled={!hasText || loading}
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            className="md-state md-focus inline-flex h-10 items-center gap-2 rounded-full px-6 text-sm font-medium transition-all duration-300 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             style={{
-              color: '#fff',
-              background: 'linear-gradient(100deg, var(--brand-2), var(--brand))',
-              boxShadow: '0 6px 20px -6px var(--brand-glow)',
+              color: 'var(--md-on-primary)',
+              background: 'var(--md-primary)',
             }}
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : result ? <RefreshCw size={16} /> : <Wand2 size={16} />}
@@ -129,8 +128,8 @@ export function RewritePanel({
 
       {error && (
         <div
-          className="mb-3 rounded-xl p-3 text-xs"
-          style={{ background: 'rgba(255,107,138,0.12)', color: 'var(--danger)' }}
+          className="mb-3 rounded-2xl p-3 text-xs"
+          style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', color: 'var(--danger)' }}
         >
           {error}
         </div>
@@ -143,8 +142,8 @@ export function RewritePanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="rounded-xl p-6 text-center text-sm"
-            style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+            className="rounded-2xl p-6 text-center text-sm"
+            style={{ background: 'var(--md-surface-container-low)', color: 'var(--text-dim)' }}
           >
             {hasText
               ? 'Hit Optimize to strip waste, tighten wording, and (if we recognize your intent) swap in a proven structured template.'
@@ -165,17 +164,17 @@ export function RewritePanel({
                 // longer than a vague one-liner, so DON'T frame the token
                 // increase as a failure. Present it as "more complete".
                 <div
-                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl p-3"
-                  style={{ background: 'rgba(96,165,250,0.10)' }}
+                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl p-3"
+                  style={{ background: 'var(--md-secondary-container)' }}
                 >
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                    style={{ background: 'var(--brand)', color: '#fff' }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium"
+                    style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                   >
                     <LayoutTemplate size={12} /> Template applied
                   </span>
                   <Stat
-                    icon={<LayoutTemplate size={16} style={{ color: 'var(--brand-2)' }} />}
+                    icon={<LayoutTemplate size={16} style={{ color: 'var(--md-primary)' }} />}
                     main={`${stats.afterTok} tokens`}
                     sub="longer, but structured & more complete"
                   />
@@ -190,8 +189,8 @@ export function RewritePanel({
                   </span>
                   {result.engine === 'ai-boost' && (
                     <span
-                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                      style={{ background: 'var(--brand)', color: '#fff' }}
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium"
+                      style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                     >
                       <Sparkles size={12} /> AI Boost
                     </span>
@@ -200,8 +199,13 @@ export function RewritePanel({
               ) : (
                 // Trim-only path: genuine token savings — keep the green framing.
                 <div
-                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl p-3"
-                  style={{ background: stats.delta >= 0 ? 'rgba(61,220,151,0.1)' : 'rgba(255,180,84,0.1)' }}
+                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl p-3"
+                  style={{
+                    background:
+                      stats.delta >= 0
+                        ? 'color-mix(in srgb, var(--ok) 12%, transparent)'
+                        : 'color-mix(in srgb, var(--warn) 12%, transparent)',
+                  }}
                 >
                   <Stat
                     icon={<TrendingDown size={16} style={{ color: stats.delta >= 0 ? 'var(--ok)' : 'var(--warn)' }} />}
@@ -215,8 +219,8 @@ export function RewritePanel({
                   />
                   {result.engine === 'ai-boost' && (
                     <span
-                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                      style={{ background: 'var(--brand)', color: '#fff' }}
+                      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium"
+                      style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                     >
                       <Sparkles size={12} /> AI Boost
                     </span>
@@ -239,8 +243,8 @@ export function RewritePanel({
                   <button
                     type="button"
                     onClick={() => copy(result.rewritten)}
-                    className="inline-flex items-center gap-1 text-[11px] transition-colors hover:brightness-150"
-                    style={{ color: 'var(--brand-2)' }}
+                    className="md-ghost md-focus inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+                    style={{ color: 'var(--md-primary)' }}
                   >
                     {copied ? <Check size={12} /> : <Copy size={12} />}
                     {copied ? 'Copied' : 'Copy'}
@@ -254,7 +258,7 @@ export function RewritePanel({
             </div>
 
             {/* diff */}
-            <details className="group rounded-xl" style={{ background: 'var(--surface-2)' }}>
+            <details className="group rounded-2xl" style={{ background: 'var(--md-surface-container-low)' }}>
               <summary className="cursor-pointer list-none p-3 text-xs font-medium" style={{ color: 'var(--text-dim)' }}>
                 Show word-level diff
                 <span className="ml-2 opacity-60 group-open:hidden">(what changed)</span>
@@ -278,16 +282,16 @@ export function RewritePanel({
               <button
                 type="button"
                 onClick={() => onUseRewrite(result.rewritten)}
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98]"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-h)' }}
+                className="md-state md-focus inline-flex h-10 items-center gap-2 rounded-full px-6 text-sm font-medium transition-all duration-300 active:scale-95"
+                style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
               >
                 <ArrowRight size={15} /> Use this rewrite
               </button>
               <button
                 type="button"
                 onClick={() => copy(result.rewritten)}
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors hover:brightness-125"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                className="md-ghost md-focus inline-flex h-10 items-center gap-2 rounded-full px-6 text-sm font-medium active:scale-95"
+                style={{ color: 'var(--md-primary)' }}
               >
                 {copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'Copied' : 'Copy'}
               </button>
@@ -321,10 +325,10 @@ function AiBoostToggle({
         }}
         aria-pressed={enabled}
         title="Use your own Anthropic key for a smarter rewrite"
-        className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors hover:brightness-125"
+        className="md-state md-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-xs font-medium transition-all duration-200"
         style={{
-          background: enabled ? 'var(--brand)' : 'var(--surface-2)',
-          color: enabled ? '#fff' : 'var(--text-dim)',
+          background: enabled ? 'var(--md-primary)' : 'var(--md-secondary-container)',
+          color: enabled ? 'var(--md-on-primary)' : 'var(--md-on-secondary-container)',
         }}
       >
         <Sparkles size={14} />
@@ -333,11 +337,12 @@ function AiBoostToggle({
       <button
         type="button"
         onClick={onOpenKeyModal}
+        aria-label={keyed ? 'API key set — manage it' : 'Add your Anthropic API key'}
         title={keyed ? 'API key set — manage it' : 'Add your Anthropic API key'}
-        className="inline-flex items-center rounded-xl p-2 transition-colors hover:brightness-125"
+        className="md-state md-focus inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200"
         style={{
-          background: 'var(--surface-2)',
-          color: keyed ? 'var(--ok)' : 'var(--text-dim)',
+          background: 'var(--md-secondary-container)',
+          color: keyed ? 'var(--ok)' : 'var(--md-on-secondary-container)',
         }}
       >
         <KeyRound size={14} />
@@ -375,10 +380,9 @@ function Panel({
 }) {
   return (
     <div
-      className="flex flex-col rounded-xl p-3"
+      className="flex flex-col rounded-2xl p-3"
       style={{
-        background: 'var(--bg-2)',
-        border: `1px solid ${tone === 'bright' ? 'var(--brand)' : 'var(--border)'}`,
+        background: tone === 'bright' ? 'var(--md-secondary-container)' : 'var(--md-surface-container-low)',
       }}
     >
       <div className="mb-2 flex items-center justify-between">
@@ -408,7 +412,7 @@ function DiffView({ diff }: { diff: DiffPart[] }) {
               key={i}
               style={{
                 color: 'var(--danger)',
-                background: 'rgba(255,107,138,0.12)',
+                background: 'color-mix(in srgb, var(--danger) 14%, transparent)',
                 textDecoration: 'line-through',
               }}
             >
@@ -416,7 +420,7 @@ function DiffView({ diff }: { diff: DiffPart[] }) {
             </span>
           )
         return (
-          <span key={i} style={{ color: 'var(--ok)', background: 'rgba(61,220,151,0.14)' }}>
+          <span key={i} style={{ color: 'var(--ok)', background: 'color-mix(in srgb, var(--ok) 16%, transparent)' }}>
             {part.text}
           </span>
         )

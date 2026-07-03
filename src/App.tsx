@@ -81,8 +81,8 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => loadPrompt(EXAMPLE, false)}
-                className="rounded-full px-3 py-1 transition-colors hover:brightness-125"
-                style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                className="md-state md-focus rounded-full px-4 py-1.5 font-medium transition-all duration-200"
+                style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
               >
                 “write me a really good book…”
               </button>

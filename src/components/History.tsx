@@ -16,18 +16,18 @@ export function History({ items, onSelect, onClear }: Props) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="glass rounded-2xl p-4 sm:p-5"
+      className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-h)' }}>
-          <HistoryIcon size={15} style={{ color: 'var(--text-dim)' }} />
+        <h3 className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-h)' }}>
+          <HistoryIcon size={15} style={{ color: 'var(--md-on-surface-variant)' }} />
           Recent prompts
         </h3>
         <button
           type="button"
           onClick={onClear}
-          className="inline-flex items-center gap-1 text-[11px] transition-colors hover:brightness-150"
-          style={{ color: 'var(--text-dim)' }}
+          className="md-ghost md-focus inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium"
+          style={{ color: 'var(--md-primary)' }}
         >
           <Trash2 size={12} /> Clear
         </button>
@@ -46,8 +46,8 @@ export function History({ items, onSelect, onClear }: Props) {
               <button
                 type="button"
                 onClick={() => onSelect(item.text)}
-                className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:brightness-125"
-                style={{ background: 'var(--surface-2)' }}
+                className="md-focus group flex w-full items-center gap-3 rounded-full px-4 py-2.5 text-left transition-all duration-200 hover:shadow-sm"
+                style={{ background: 'var(--md-surface-container-low)', color: 'var(--md-on-secondary-container)' }}
               >
                 <span className="flex-1 truncate text-xs" style={{ color: 'var(--text)' }}>
                   {item.text}
@@ -61,7 +61,7 @@ export function History({ items, onSelect, onClear }: Props) {
                 <CornerDownLeft
                   size={13}
                   className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-                  style={{ color: 'var(--brand-2)' }}
+                  style={{ color: 'var(--md-primary)' }}
                 />
               </button>
             </motion.li>

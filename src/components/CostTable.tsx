@@ -57,11 +57,11 @@ export function CostTable({ tokens }: Props) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="glass rounded-2xl p-4 sm:p-5"
+      className="glass rounded-3xl p-4 shadow-sm sm:p-5"
     >
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div className="text-left">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--text-h)' }}>
+          <h3 className="text-sm font-medium" style={{ color: 'var(--text-h)' }}>
             Cost per call
           </h3>
           <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
@@ -70,8 +70,8 @@ export function CostTable({ tokens }: Props) {
           </p>
         </div>
         <span
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px]"
-          style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium"
+          style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
         >
           <Info size={11} />
           Estimated · prices {PRICING_LAST_UPDATED}
@@ -133,8 +133,8 @@ function Th({
       <button
         type="button"
         onClick={onClick}
-        className="inline-flex items-center gap-1 transition-colors hover:brightness-150"
-        style={{ color: active ? 'var(--brand-2)' : 'var(--text-dim)' }}
+        className="md-focus inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium transition-colors duration-200"
+        style={{ color: active ? 'var(--md-primary)' : 'var(--text-dim)' }}
       >
         {children}
         <ArrowUpDown size={11} />
@@ -157,7 +157,7 @@ function Row({
   return (
     <tr
       className="border-t transition-colors"
-      style={{ borderColor: 'var(--border)' }}
+      style={{ borderColor: 'var(--md-surface-container-low)' }}
     >
       <td className="py-2.5">
         <div className="flex items-center gap-2">
@@ -171,8 +171,8 @@ function Row({
               {model.name}
               {isCheapest && (
                 <span
-                  className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
-                  style={{ background: 'rgba(61,220,151,0.16)', color: 'var(--ok)' }}
+                  className="rounded-full px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide"
+                  style={{ background: 'color-mix(in srgb, var(--ok) 16%, transparent)', color: 'var(--ok)' }}
                 >
                   cheapest
                 </span>

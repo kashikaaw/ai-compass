@@ -1,42 +1,65 @@
 @import 'tailwindcss';
 
 /*
-  AI Compass design system.
-  Dark-first, consumer-product palette. All colors exposed as CSS variables so
-  components can reference them via inline styles or Tailwind arbitrary values.
+  AI Compass design system — Material You (Material Design 3), Light.
+  Seed color #6750A4. Light tonal-lavender surfaces, dark on-surface text.
+  All colors exposed as CSS variables so components can reference them via
+  inline styles or Tailwind arbitrary values. The legacy variable *names*
+  (--bg, --surface, --text, --brand, …) are kept but remapped onto the MD3
+  light palette so existing inline styles read correctly; new MD3-named
+  tokens are added alongside for components that were restyled explicitly.
 */
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Consolas, monospace;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Surfaces */
-  --bg: #0a0b12;
-  --bg-2: #0f111a;
-  --surface: #151827;
-  --surface-2: #1c2033;
-  --border: #262b40;
-  --border-strong: #333a55;
+  /* ---- MD3 core roles ---- */
+  --md-surface: #fffbfe;
+  --md-on-surface: #1c1b1f;
+  --md-primary: #6750a4;
+  --md-on-primary: #ffffff;
+  --md-secondary-container: #e8def8;
+  --md-on-secondary-container: #1d192b;
+  --md-tertiary: #7d5260;
+  --md-surface-container: #f3edf7;
+  --md-surface-container-low: #e7e0ec;
+  --md-outline: #79747e;
+  --md-on-surface-variant: #49454f;
+
+  /* ---- Legacy names remapped to the light palette ---- */
+  /* Surfaces: Background -> Surface Container -> Surface Container Low */
+  --bg: #fffbfe;
+  --bg-2: #e7e0ec; /* muted, used for inputs/inset panels */
+  --surface: #f3edf7; /* card background */
+  --surface-2: #e8def8; /* chips / secondary containers */
+  --border: #d8d0e0; /* soft tonal divider */
+  --border-strong: #79747e; /* outline */
 
   /* Text */
-  --text: #c7ccdd;
-  --text-dim: #8890a8;
-  --text-h: #f4f6fc;
+  --text: #49454f; /* on-surface-variant: secondary text */
+  --text-dim: #79747e; /* muted */
+  --text-h: #1c1b1f; /* on-surface: headings / primary text */
 
-  /* Brand */
-  --brand: #7c5cff;
-  --brand-2: #4dd6ff;
-  --brand-glow: rgba(124, 92, 255, 0.35);
+  /* Brand (primary) */
+  --brand: #6750a4;
+  --brand-2: #6750a4; /* single primary accent in MD3 (no gradient duo) */
+  --brand-strong: #4f378b;
+  --brand-glow: rgba(103, 80, 164, 0.28);
+  --on-brand: #ffffff;
 
-  /* Semantic */
-  --ok: #3ddc97;
-  --warn: #ffb454;
-  --danger: #ff6b8a;
-  --info: #4dd6ff;
+  /* Semantic — retinted deeper/saturated to read on light tonal surfaces */
+  --ok: #146c2e; /* success green */
+  --warn: #8a5300; /* warning amber (deep) */
+  --danger: #b3261e; /* danger rose/red */
+  --info: #1f5eae; /* info blue */
+
+  /* Motion */
+  --md-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 * {
@@ -50,11 +73,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
-    radial-gradient(1000px 500px at 100% 0%, rgba(77, 214, 255, 0.12), transparent 55%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--md-surface);
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -68,11 +87,11 @@ body {
 }
 
 ::selection {
-  background: var(--brand-glow);
-  color: var(--text-h);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — tonal, light */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -81,33 +100,33 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--md-surface-container-low);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--brand);
+  background: var(--md-outline);
   background-clip: padding-box;
 }
 
-/* Utility: gradient text */
+/* Utility: primary-tinted heading accent (replaces old gradient text) */
 .text-gradient {
-  background: linear-gradient(100deg, var(--brand-2), var(--brand) 55%, #b98cff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--md-primary);
 }
 
-/* Utility: glassy card */
+/* Utility: MD3 tonal card surface (replaces old glassy dark card).
+   Depth comes from the tonal surface + soft elevation, not borders. */
 .glass {
-  background: color-mix(in oklab, var(--surface) 88%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  background: var(--md-surface-container);
+  border: none;
 }
 
 /* The highlight overlay + textarea must share identical metrics so the
-   colored token layer lines up perfectly behind the transparent text. */
+   colored token layer lines up perfectly behind the transparent text.
+   NOTE: this stays MONOSPACE on purpose — the character-alignment technique
+   depends on predictable glyph widths, so it is a deliberate exception to the
+   app-wide switch to Roboto. Do not change --font-mono here. */
 .pw-shared {
   font-family: var(--font-mono);
   font-size: 15px;
@@ -122,6 +141,64 @@ body {
   margin: 0;
 }
 
+/* MD3 filled text field: rounded top, square bottom, 2px bottom accent
+   border that shifts from outline -> primary on focus. */
+.md-field {
+  background: var(--md-surface-container-low);
+  border: 0;
+  border-bottom: 2px solid var(--md-outline);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  transition: border-color 200ms var(--md-ease), background-color 200ms var(--md-ease);
+}
+.md-field:focus,
+.md-field:focus-within {
+  border-bottom-color: var(--md-primary);
+  outline: none;
+}
+
+/* MD3 state-layer helper for solid-color (filled/tonal) buttons: darken via a
+   translucent overlay rather than a color swap. hover ≈ base/90, active ≈ /80.
+   Implemented with a black scrim whose alpha steps up on hover/active so it
+   works for any underlying background color. */
+.md-state {
+  position: relative;
+}
+.md-state::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 200ms var(--md-ease);
+  pointer-events: none;
+}
+.md-state:hover:not(:disabled)::after {
+  opacity: 0.08;
+}
+.md-state:active:not(:disabled)::after {
+  opacity: 0.12;
+}
+
+/* Ghost/transparent state layer: primary tint on hover (/10) and focus (/5). */
+.md-ghost {
+  transition: background-color 200ms var(--md-ease), color 200ms var(--md-ease);
+}
+.md-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+}
+
+/* Shared visible focus ring for every interactive element. */
+.md-focus:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--md-surface),
+    0 0 0 4px var(--md-primary);
+}
+
 @keyframes floaty {
   0%,
   100% {
@@ -129,5 +206,19 @@ body {
   }
   50% {
     transform: translateY(-6px);
+  }
+}
+
+/* Respect reduced-motion: remove transform-based motion, keep color fades. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: color, background-color, border-color, fill, stroke,
+      opacity !important;
+    transition-duration: 200ms !important;
+    scroll-behavior: auto !important;
   }
 }
