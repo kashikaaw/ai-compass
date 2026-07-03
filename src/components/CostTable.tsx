@@ -108,12 +108,109 @@ export function CostTable({ tokens }: Props) {
         </table>
       </div>
 
+      {tokens > 0 && cheapest && (
+        <UsageProjection model={cheapest.model} perCall={cheapest.roundtrip} />
+      )}
+
       <p className="mt-3 text-left text-[10px] leading-relaxed" style={{ color: 'var(--text-dim)' }}>
         Token counts use the o200k_base tokenizer as a universal estimate. Claude and
         Gemini use different tokenizers, so their counts are close approximations,
         not exact. Verify current pricing at each provider's docs.
       </p>
     </motion.div>
+  )
+}
+
+/**
+ * A tiny "why does a fraction of a cent matter?" projection. Non-technical
+ * users rarely send a prompt once — they send similar prompts over and over.
+ * This multiplies the cheapest model's per-call cost across a chosen daily
+ * volume into per-day and per-month figures, in plain English.
+ *
+ * This is a FORWARD-LOOKING what-if projection for a single repeated prompt —
+ * distinct from History's session total, which sums the *actual* distinct
+ * prompts you've already analyzed. They complement rather than duplicate.
+ */
+const FREQ_PRESETS = [1, 10, 50, 100] as const
+
+function UsageProjection({ model, perCall }: { model: ModelPricing; perCall: number }) {
+  const [perDay, setPerDay] = useState<number>(10)
+  const daily = perCall * perDay
+  const monthly = daily * 30
+
+  return (
+    <div
+      className="mt-4 rounded-2xl p-3.5 sm:p-4"
+      style={{ background: 'var(--md-surface-container-low)' }}
+    >
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="text-left">
+          <h4 className="text-xs font-medium" style={{ color: 'var(--text-h)' }}>
+            You rarely send a prompt just once
+          </h4>
+          <p className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
+            If you ran this prompt on {model.name} …
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-1" role="group" aria-label="Prompts per day">
+          {FREQ_PRESETS.map((n) => {
+            const active = n === perDay
+            return (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPerDay(n)}
+                aria-pressed={active}
+                className="md-state md-focus rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200"
+                style={{
+                  background: active ? 'var(--md-primary)' : 'var(--md-secondary-container)',
+                  color: active ? 'var(--md-on-primary)' : 'var(--md-on-secondary-container)',
+                }}
+              >
+                {n}/day
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <ProjectionStat label={`${perDay}× a day`} value={formatUSD(daily)} caption="per day" />
+        <ProjectionStat label="over a month" value={formatUSD(monthly)} caption="~30 days" highlight />
+      </div>
+    </div>
+  )
+}
+
+function ProjectionStat({
+  label,
+  value,
+  caption,
+  highlight,
+}: {
+  label: string
+  value: string
+  caption: string
+  highlight?: boolean
+}) {
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5 text-left"
+      style={{ background: highlight ? 'color-mix(in srgb, var(--md-primary) 10%, transparent)' : 'var(--md-surface-container)' }}
+    >
+      <div className="text-[10px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-dim)' }}>
+        {label}
+      </div>
+      <div
+        className="font-mono text-lg font-semibold leading-tight"
+        style={{ color: highlight ? 'var(--md-primary)' : 'var(--text-h)' }}
+      >
+        {value}
+      </div>
+      <div className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+        {caption}
+      </div>
+    </div>
   )
 }
 
