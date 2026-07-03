@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, ShieldCheck, AlertTriangle, FileJson, ArrowRight } from 'lucide-react'
+import { Upload, ShieldCheck, AlertTriangle, FileJson, ArrowRight, HelpCircle, ExternalLink } from 'lucide-react'
 import { parseChatHistory } from '../lib/chatHistoryParser'
 import { analyzeHistory, type HistoryReport } from '../lib/historyAnalysis'
 import { formatUSD } from '../lib/pricing'
@@ -24,6 +24,7 @@ type State =
  */
 export function HistoryImport({ onUsePrompt }: Props) {
   const [state, setState] = useState<State>({ kind: 'idle' })
+  const [helpOpen, setHelpOpen] = useState<'chatgpt' | 'claude' | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = async (file: File | undefined) => {
@@ -82,11 +83,58 @@ export function HistoryImport({ onUsePrompt }: Props) {
           </button>
         )}
       </div>
-      <p className="mb-3 text-xs leading-relaxed" style={{ color: 'var(--text-dim)' }}>
+      <p className="mb-2 text-xs leading-relaxed" style={{ color: 'var(--text-dim)' }}>
         Upload your exported ChatGPT (<code>conversations.json</code>) or Claude data export
         and see the patterns in your own prompting — most common issues, priciest prompts, and
         example rewrites.
       </p>
+
+      {/* "how do I get this file" — most people have never exported their chat
+          history before, so walk them through it rather than assuming they know. */}
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
+          Don't have the file yet?
+        </span>
+        <button
+          type="button"
+          onClick={() => setHelpOpen(helpOpen === 'chatgpt' ? null : 'chatgpt')}
+          aria-pressed={helpOpen === 'chatgpt'}
+          className="md-state md-focus inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium transition-all duration-200"
+          style={{
+            color: helpOpen === 'chatgpt' ? 'var(--md-on-primary)' : 'var(--md-on-secondary-container)',
+            background: helpOpen === 'chatgpt' ? 'var(--md-primary)' : 'var(--md-secondary-container)',
+          }}
+        >
+          <HelpCircle size={11} /> Show me for ChatGPT
+        </button>
+        <button
+          type="button"
+          onClick={() => setHelpOpen(helpOpen === 'claude' ? null : 'claude')}
+          aria-pressed={helpOpen === 'claude'}
+          className="md-state md-focus inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium transition-all duration-200"
+          style={{
+            color: helpOpen === 'claude' ? 'var(--md-on-primary)' : 'var(--md-on-secondary-container)',
+            background: helpOpen === 'claude' ? 'var(--md-primary)' : 'var(--md-secondary-container)',
+          }}
+        >
+          <HelpCircle size={11} /> Show me for Claude
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {helpOpen && (
+          <motion.div
+            key={helpOpen}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="mb-3 overflow-hidden"
+          >
+            <HowToPanel source={helpOpen} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* privacy note — matches the app's "nothing you type is uploaded" stance */}
       <div
@@ -270,6 +318,64 @@ function Examples({
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+/* ------------------------------ export how-to ------------------------------ */
+
+const CHATGPT_STEPS = [
+  'Sign in to ChatGPT on the web, click your name/profile icon, and open Settings.',
+  'Go to Data controls, then find Export data and click Export.',
+  'Confirm the export. OpenAI emails you a download link (usually within minutes, sometimes longer).',
+  'Open that email and click Download data export — the link expires after 24 hours.',
+  'Unzip the downloaded file. Upload the conversations.json file from inside it here.',
+]
+
+const CLAUDE_STEPS = [
+  'Sign in to Claude on the web, click your name/initials in the bottom-left, and open Settings.',
+  'Go to the Privacy section.',
+  'Click Export data and confirm.',
+  'Anthropic emails you a download link — the link expires after 24 hours.',
+  'Download the file from that email and upload it here (it’s already plain JSON, no unzipping needed).',
+]
+
+const HOWTO_LINKS: Record<'chatgpt' | 'claude', string> = {
+  chatgpt: 'https://help.openai.com/en/articles/7260999-how-do-i-export-my-chatgpt-history-and-data',
+  claude: 'https://privacy.claude.com/en/articles/9450526-how-can-i-export-my-claude-data',
+}
+
+function HowToPanel({ source }: { source: 'chatgpt' | 'claude' }) {
+  const steps = source === 'chatgpt' ? CHATGPT_STEPS : CLAUDE_STEPS
+  const label = source === 'chatgpt' ? 'ChatGPT' : 'Claude'
+
+  return (
+    <div className="rounded-2xl p-3.5" style={{ background: 'var(--md-surface-container-low)' }}>
+      <div className="mb-2 text-[11px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-dim)' }}>
+        Getting your {label} export
+      </div>
+      <ol className="flex flex-col gap-1.5">
+        {steps.map((step, i) => (
+          <li key={i} className="flex items-start gap-2 text-xs leading-relaxed" style={{ color: 'var(--text)' }}>
+            <span
+              className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold"
+              style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+            >
+              {i + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+      <a
+        href={HOWTO_LINKS[source]}
+        target="_blank"
+        rel="noreferrer noopener"
+        className="md-ghost md-focus mt-2.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+        style={{ color: 'var(--md-primary)' }}
+      >
+        Official {label} instructions <ExternalLink size={11} />
+      </a>
     </div>
   )
 }
