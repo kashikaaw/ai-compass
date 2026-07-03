@@ -15,6 +15,19 @@ into a tight, structured prompt).
 Everything runs **locally in your browser**. There is no backend, no signup, and
 nothing you type is uploaded.
 
+### Optional: cloud sign-in
+
+There is an **optional**, passwordless sign-in (magic link — we email you a
+one-time link, there is never a password) that lets your prompt history follow
+you across devices via [Supabase](https://supabase.com). It's a pure
+enhancement: the app works fully without it, and if no Supabase project is
+configured the sign-in UI simply doesn't appear (graceful no-op). To enable it,
+the site operator sets up their own Supabase project, runs
+[`supabase/schema.sql`](supabase/schema.sql) once in the Supabase SQL Editor,
+and provides two values — as a local `.env` (see [`.env.example`](.env.example))
+for development, and as the GitHub repository secrets `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` for the deployed build.
+
 <img width="1512" height="805" alt="image" src="https://github.com/user-attachments/assets/e7682be0-9399-4f35-8c67-ea6146a3d900" />
 
 ---

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Cloud } from 'lucide-react'
 import './App.css'
 
 import { Hero } from './components/Hero'
@@ -10,6 +11,7 @@ import { ConfusionFlags } from './components/ConfusionFlags'
 import { RewritePanel } from './components/RewritePanel'
 import { TemplateGallery } from './components/TemplateGallery'
 import { ApiKeyModal } from './components/ApiKeyModal'
+import { AuthPanel } from './components/AuthPanel'
 import { History } from './components/History'
 import { Footer } from './components/Footer'
 import { ClarifyBanner, ClarifyFlow } from './components/ClarifyFlow'
@@ -17,7 +19,7 @@ import { ClarifyBanner, ClarifyFlow } from './components/ClarifyFlow'
 import { countTokens } from './lib/tokenizer'
 import { detectConfusion } from './lib/confusionDetector'
 import { shouldOfferClarify } from './lib/clarifyFlow'
-import { useDebounced, useHistory } from './lib/hooks'
+import { useDebounced, useHistory, useAuth } from './lib/hooks'
 
 const EXAMPLE =
   'I would like you to please write me a really good book about a detective, it should be nice and engaging and interesting, and I want it to be the best, thanks so much in advance!'
@@ -26,6 +28,7 @@ export default function App() {
   const [prompt, setPrompt] = useState('')
   const [showHeat, setShowHeat] = useState(true)
   const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const [authPanelOpen, setAuthPanelOpen] = useState(false)
   const [aiBoost, setAiBoost] = useState(false)
   const [, forceRender] = useState(0)
 
@@ -36,7 +39,8 @@ export default function App() {
   const workbenchRef = useRef<HTMLDivElement>(null)
 
   const debounced = useDebounced(prompt, 300)
-  const { items, add, clear, sessionTotal } = useHistory()
+  const auth = useAuth()
+  const { items, add, clear, sessionTotal } = useHistory(auth.session)
 
   // Live analysis (debounced heavy work).
   const tokens = useMemo(() => countTokens(debounced), [debounced])
@@ -154,6 +158,23 @@ export default function App() {
 
       <TemplateGallery onUseTemplate={(p) => loadPrompt(p)} />
 
+      {/* Optional cloud sign-in entry point — only shown when Supabase is
+          configured (env vars set). Fully hidden otherwise, so a fresh clone
+          without a backend never sees a broken feature. */}
+      {auth.configured && auth.ready && (
+        <div className="mx-auto -mb-2 flex w-full max-w-5xl justify-center px-4 pt-2 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setAuthPanelOpen(true)}
+            className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200"
+            style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+          >
+            <Cloud size={13} />
+            {auth.email ? `Synced · ${auth.email}` : 'Sign in to sync across devices'}
+          </button>
+        </div>
+      )}
+
       <Footer />
 
       <ApiKeyModal
@@ -161,6 +182,8 @@ export default function App() {
         onClose={() => setKeyModalOpen(false)}
         onSaved={() => forceRender((n) => n + 1)}
       />
+
+      <AuthPanel open={authPanelOpen} onClose={() => setAuthPanelOpen(false)} auth={auth} />
 
       <ClarifyFlow
         open={clarifyOpen}
