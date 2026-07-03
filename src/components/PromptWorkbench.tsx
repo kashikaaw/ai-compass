@@ -98,7 +98,14 @@ export function PromptWorkbench({ value, onChange, flags, showHeat, onToggleHeat
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-          spellCheck={false}
+          // Native browser spellcheck ON so fast-typed typos get the usual red
+          // squiggle. NOTE: when the Heatmap is on, `WebkitTextFillColor` below
+          // is transparent so the colored overlay reads through — and WebKit /
+          // Blink suppress the spellcheck underline while text-fill is
+          // transparent. So squiggles show whenever the Heatmap is OFF; with it
+          // ON the overlay (not the browser) is what the user sees. Still a
+          // strict improvement over the old `spellCheck={false}`.
+          spellCheck={true}
           placeholder="Try: write me a book about a detective who can taste lies…"
           className="pw-shared relative block h-[240px] w-full resize-y sm:h-[280px]"
           style={{

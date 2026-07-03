@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Sparkles, X, ArrowRight, ArrowLeft, Check, SkipForward, Wand2 } from 'lucide-react'
+import { Sparkles, X, ArrowRight, ArrowLeft, Check, SkipForward, Wand2, Loader2 } from 'lucide-react'
 import {
   CLARIFY_QUESTIONS,
   assembleClarifiedPrompt,
@@ -10,6 +10,7 @@ import {
 import { countTokens } from '../lib/tokenizer'
 import { SESSION_MODEL, sessionPromptCost } from '../lib/hooks'
 import { formatUSD } from '../lib/pricing'
+import { aiBoostRewrite, AiBoostError, hasKey } from '../lib/anthropicClient'
 
 /* ------------------------------ trigger banner ---------------------------- */
 
@@ -77,6 +78,8 @@ interface FlowProps {
   original: string
   onClose: () => void
   onApply: (assembled: string) => void
+  /** Opens the API-key modal when the user has no stored Anthropic key. */
+  onOpenKeyModal: () => void
 }
 
 const stepVariants = {
@@ -85,10 +88,13 @@ const stepVariants = {
   exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
 }
 
-export function ClarifyFlow({ open, original, onClose, onApply }: FlowProps) {
+export function ClarifyFlow({ open, original, onClose, onApply, onOpenKeyModal }: FlowProps) {
   const [step, setStep] = useState(0)
   const [dir, setDir] = useState(1)
   const [answers, setAnswers] = useState<ClarifyAnswers>(emptyAnswers)
+  // AI-polish state (final step only).
+  const [boosting, setBoosting] = useState(false)
+  const [boostError, setBoostError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
 
@@ -102,6 +108,8 @@ export function ClarifyFlow({ open, original, onClose, onApply }: FlowProps) {
       setStep(0)
       setDir(1)
       setAnswers({ ...emptyAnswers(), goal: original.trim() })
+      setBoosting(false)
+      setBoostError(null)
     }
   }, [open, original])
 
@@ -150,6 +158,34 @@ export function ClarifyFlow({ open, original, onClose, onApply }: FlowProps) {
     }
     setDir(1)
     setStep((s) => Math.min(s + 1, total - 1))
+  }
+
+  // Assemble the template, then send it through Claude for a real rewrite that
+  // fixes grammar/spelling and rephrases for clarity — the rule-based assembly
+  // can't do this. Mirrors RewritePanel's AI-Boost pattern: no key → open the
+  // key modal instead of calling; failures surface inline and keep the wizard
+  // open so the user can retry or fall back to the plain "Build my prompt".
+  const buildAndPolish = async () => {
+    setBoostError(null)
+    if (!hasKey()) {
+      onOpenKeyModal()
+      return
+    }
+    const assembled = assembleClarifiedPrompt(original, answers)
+    setBoosting(true)
+    try {
+      const polished = await aiBoostRewrite(assembled)
+      onApply(polished)
+      onClose()
+    } catch (e) {
+      setBoostError(
+        e instanceof AiBoostError
+          ? e.message
+          : 'AI polish failed. Try again, or use “Build my prompt”.',
+      )
+    } finally {
+      setBoosting(false)
+    }
   }
 
   const goBack = () => {
@@ -302,31 +338,61 @@ export function ClarifyFlow({ open, original, onClose, onApply }: FlowProps) {
               </div>
             )}
 
+            {/* inline AI-polish error (kept above the nav so the wizard stays
+                open for a retry or the plain "Build my prompt" fallback) */}
+            {boostError && (
+              <p className="mt-3 text-[11px] leading-snug" style={{ color: 'var(--danger)' }}>
+                {boostError}
+              </p>
+            )}
+
             {/* nav */}
             <div className="mt-4 flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={goBack}
-                disabled={step === 0}
+                disabled={step === 0 || boosting}
                 className="md-ghost md-focus inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-30"
                 style={{ color: 'var(--md-primary)' }}
               >
                 <ArrowLeft size={14} /> Back
               </button>
 
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={skip}
-                  className="md-ghost md-focus inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200"
-                  style={{ color: 'var(--md-on-surface-variant)' }}
-                >
-                  <SkipForward size={13} /> Skip
-                </button>
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                {!isLast && (
+                  <button
+                    type="button"
+                    onClick={skip}
+                    className="md-ghost md-focus inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium transition-all duration-200"
+                    style={{ color: 'var(--md-on-surface-variant)' }}
+                  >
+                    <SkipForward size={13} /> Skip
+                  </button>
+                )}
+                {isLast && (
+                  <button
+                    type="button"
+                    onClick={buildAndPolish}
+                    disabled={boosting}
+                    title={hasKey() ? 'Assemble then rewrite with Claude' : 'Add your Anthropic key to polish with AI'}
+                    className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-medium transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{ background: 'var(--md-secondary-container)', color: 'var(--md-on-secondary-container)' }}
+                  >
+                    {boosting ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" /> Polishing…
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 size={14} /> Build &amp; Polish with AI
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={goNext}
-                  disabled={!canAdvance}
+                  disabled={!canAdvance || boosting}
                   className="md-state md-focus inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-medium transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                   style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                 >

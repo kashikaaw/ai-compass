@@ -180,6 +180,7 @@ export default function App() {
         original={prompt}
         onClose={() => setClarifyOpen(false)}
         onApply={(assembled) => loadPrompt(assembled, false)}
+        onOpenKeyModal={() => setKeyModalOpen(true)}
       />
     </div>
   )

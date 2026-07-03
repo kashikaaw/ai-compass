@@ -64,6 +64,7 @@ Rules:
 - Add explicit output-format constraints (length, structure) when missing.
 - If the request is a known archetype (book, essay, email, code, etc.), impose a tight, well-scoped structure.
 - Preserve the user's actual intent and any concrete details/constraints they gave.
+- Preserve any explicit instruction telling the downstream model to ask clarifying questions if something is missing.
 - Do NOT answer or fulfill the prompt. Only rewrite it.
 
 Respond with ONLY the rewritten prompt text. No preamble, no explanation, no code fences.`

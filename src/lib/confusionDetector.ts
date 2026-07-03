@@ -19,6 +19,7 @@ export type FlagCategory =
   | 'runon'
   | 'noexamples'
   | 'nostructure'
+  | 'shorthand'
 
 export interface Flag {
   category: FlagCategory
@@ -89,6 +90,12 @@ export const CATEGORY_META: Record<FlagCategory, CategoryMeta> = {
     color: '#7fa8ff',
     blurb:
       'Anthropic recommends XML tags or clear delimiters to separate instructions from context in longer prompts, so the model doesn’t blur them together.',
+  },
+  shorthand: {
+    label: 'Undefined shorthand',
+    color: '#ffca6b',
+    blurb:
+      'An acronym or abbreviation the model may not know in your context. Spell it out once so it doesn’t have to guess.',
   },
 }
 
@@ -222,6 +229,77 @@ const FORMAT_HINTS = [
   'columns',
   'steps',
 ]
+
+// Well-known acronyms/abbreviations we should NOT flag — everyone (and every
+// model) knows these, so flagging them would just be noise. Compared
+// case-insensitively. Err generous: adding a term here only suppresses a fuzzy
+// heuristic that was always going to be imperfect.
+const KNOWN_ACRONYMS = new Set(
+  [
+    // tech / web
+    'ai', 'api', 'apis', 'url', 'urls', 'html', 'css', 'json', 'xml', 'yaml',
+    'sql', 'sdk', 'sdks', 'ui', 'ux', 'cli', 'ide', 'os', 'app', 'apps', 'web',
+    'http', 'https', 'ftp', 'ssh', 'dns', 'ip', 'cpu', 'gpu', 'ram', 'ssd',
+    'usb', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'csv', 'md', 'db',
+    'llm', 'llms', 'ml', 'nlp', 'saas', 'paas', 'iaas', 'crm', 'cms', 'seo',
+    // business / roles
+    'ceo', 'cto', 'cfo', 'coo', 'cmo', 'vp', 'hr', 'pr', 'roi', 'kpi', 'kpis',
+    'b2b', 'b2c', 'faq', 'faqs', 'eta', 'ceo', 'id', 'ids', 'q1', 'q2', 'q3',
+    'q4', 'ytd', 'mvp', 'poc', 'sla', 'nda', 'rfp', 'p&l',
+    // common everyday
+    'ok', 'tv', 'pc', 'usa', 'uk', 'eu', 'us', 'un', 'ceo', 'asap', 'fyi',
+    'diy', 'faq', 'aka', 'etc', 'vs', 'am', 'pm', 'usd', 'eur', 'gbp',
+    'gmt', 'utc', 'ceo', 'ok', 'iq', 'phd', 'mba', 'gpa', 'sat', 'gps',
+    'covid', 'nasa', 'fbi', 'cia', 'gdp', 'atm', 'pin', 'otp',
+  ].map((w) => w.toLowerCase()),
+)
+
+// Short English words that are NOT acronyms — a stoplist so the heuristic
+// doesn't flag ordinary vocabulary that happens to be short/lowercase.
+const SHORT_STOPWORDS = new Set([
+  'the', 'and', 'for', 'but', 'not', 'you', 'all', 'any', 'can', 'her', 'was',
+  'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new',
+  'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'its', 'let', 'put',
+  'say', 'she', 'too', 'use', 'are', 'this', 'that', 'with', 'have', 'from',
+  'they', 'will', 'your', 'them', 'then', 'than', 'when', 'what', 'were',
+  'been', 'more', 'some', 'time', 'very', 'into', 'just', 'over', 'also',
+  'back', 'want', 'much', 'need', 'make', 'made', 'like', 'good', 'both',
+  'each', 'even', 'here', 'many', 'most', 'must', 'only', 'such', 'take',
+  'well', 'work', 'help', 'give', 'find', 'show', 'tell', 'keep', 'team',
+  'food', 'client', 'about', 'their', 'there', 'these', 'those', 'would',
+  'could', 'should', 'apt', 'via', 'per', 'yes', 'off', 'top', 'end',
+  'add', 'ask', 'run', 'set', 'due', 'far', 'few', 'lot', 'own',
+  'name', 'goal', 'plan', 'list', 'note', 'item', 'part', 'step', 'idea',
+  'word', 'line', 'page', 'text', 'data', 'info', 'user', 'apps',
+])
+
+// Candidate tokens: 2–6 letters, all one case (fully lowercase like "ccm"/"wrt"
+// or fully uppercase like "CCM"/"KPI"). Mixed/Title case is skipped — that's a
+// normal capitalized word, not shorthand.
+const SHORTHAND_TOKEN = /\b([a-z]{2,6}|[A-Z]{2,6})\b/g
+
+/**
+ * Whether `token` looks like undefined domain shorthand worth flagging.
+ *
+ * Conservative by design — there is no real dictionary here, so we lean on a
+ * few tight signals and bail on anything whitelisted or in the short-word
+ * stoplist:
+ *   - all-caps 2–6 letters ("CCM", "KPI")           → shorthand
+ *   - all-lowercase with NO vowel ("ccm", "wrt")     → shorthand
+ * Vowel-containing lowercase words (e.g. "seo", "roi") are left alone unless
+ * whitelisted, since they read like ordinary words and drive false positives.
+ */
+function looksLikeShorthand(token: string): boolean {
+  const lower = token.toLowerCase()
+  if (KNOWN_ACRONYMS.has(lower)) return false
+  if (SHORT_STOPWORDS.has(lower)) return false
+  // All-caps 2–6 letters is a strong acronym signal.
+  if (/^[A-Z]{2,6}$/.test(token)) return true
+  // All-lowercase 2–6 letters with no vowel at all ("ccm", "wrt", "mgmt",
+  // "cttc") is almost never an English word — treat as shorthand.
+  if (/^[a-z]{2,6}$/.test(token) && !/[aeiou]/.test(token)) return true
+  return false
+}
 
 export function detectConfusion(text: string): Flag[] {
   if (!text.trim()) return []
@@ -407,6 +485,39 @@ export function detectConfusion(text: string): Flag[] {
           'Anthropic’s prompting guidance: in longer prompts, wrap context/data in XML tags (e.g. <context>…</context>) or use clear delimiters so the model can tell instructions apart from the material it should act on.',
         suggestion: 'Wrap background/data in XML tags or labeled sections.',
       })
+    }
+  }
+
+  // 10. Undefined shorthand / acronyms — short tokens that look like domain
+  // abbreviations the downstream model can't be expected to infer (e.g. "ccm",
+  // "wrt"). We highlight the matched token as a span (like `vague`), skip
+  // well-known acronyms and common short words, and skip a token that already
+  // defines itself inline via a following parenthetical (e.g. "ccm (customer
+  // communication management)"). Inherently fuzzy with no real dictionary, so
+  // kept conservative to limit false positives.
+  {
+    let m: RegExpExecArray | null
+    SHORTHAND_TOKEN.lastIndex = 0
+    while ((m = SHORTHAND_TOKEN.exec(text)) !== null) {
+      const token = m[0]
+      if (looksLikeShorthand(token)) {
+        // Skip if the token is immediately followed by its own expansion in
+        // parentheses — the user already spelled it out.
+        const after = text.slice(m.index + token.length, m.index + token.length + 3)
+        const definedInline = /^\s*\(/.test(after)
+        if (!definedInline) {
+          flags.push({
+            category: 'shorthand',
+            start: m.index,
+            end: m.index + token.length,
+            match: token,
+            label: 'Shorthand',
+            explanation: `The model may not know what “${token}” means in your context — spell it out once (e.g. “${token} (…full term…)”) so it doesn't have to guess.`,
+            suggestion: 'Define the acronym on first use.',
+          })
+        }
+      }
+      if (m.index === SHORTHAND_TOKEN.lastIndex) SHORTHAND_TOKEN.lastIndex++
     }
   }
 
