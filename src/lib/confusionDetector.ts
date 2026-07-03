@@ -17,6 +17,8 @@ export type FlagCategory =
   | 'contradiction'
   | 'format'
   | 'runon'
+  | 'noexamples'
+  | 'nostructure'
 
 export interface Flag {
   category: FlagCategory
@@ -75,6 +77,18 @@ export const CATEGORY_META: Record<FlagCategory, CategoryMeta> = {
     label: 'Run-on sentence',
     color: '#8890a8',
     blurb: 'A very long sentence is harder for the model to parse reliably.',
+  },
+  noexamples: {
+    label: 'No example given',
+    color: '#c78bff',
+    blurb:
+      'Anthropic recommends showing an example for complex or creative asks — a sample makes the model far more likely to match what you want.',
+  },
+  nostructure: {
+    label: 'No structure / delimiters',
+    color: '#7fa8ff',
+    blurb:
+      'Anthropic recommends XML tags or clear delimiters to separate instructions from context in longer prompts, so the model doesn’t blur them together.',
   },
 }
 
@@ -336,6 +350,63 @@ export function detectConfusion(text: string): Flag[] {
         }
       }
       offset += s.length
+    }
+  }
+
+  // 8. Complex/creative task with no example given (Anthropic: examples /
+  // few-shot prompting materially improve results on non-trivial tasks). We
+  // fire a whole-prompt flag when the prompt asks for a creative/complex
+  // deliverable, is non-trivial in length, and shows no sign of an example.
+  {
+    const lower = text.toLowerCase()
+    const words = text.trim().split(/\s+/).length
+    const asksComplex =
+      /\b(write|draft|compose|generate|create|design|build|classify|categorize|extract|summariz|translat|rewrite|analy[sz]e|essay|story|poem|email|script|plan|outline)\b/i.test(
+        text,
+      )
+    // Rough "has an example" signals: an explicit example marker, quoted sample,
+    // or few-shot-style delimiters.
+    const hasExample =
+      /\b(for example|e\.g\.|for instance|such as|like this|here('| i)s an example|example:|sample:)\b/i.test(
+        lower,
+      ) || /(^|\n)\s*(input|output|example)\s*[:-]/i.test(text)
+    if (asksComplex && !hasExample && words >= 15) {
+      flags.push({
+        category: 'noexamples',
+        start: 0,
+        end: 0, // whole-prompt flag
+        match: '',
+        label: 'No example provided',
+        explanation:
+          'Anthropic’s prompting guidance: for complex or creative tasks, showing even one example (few-shot) sharply improves how well the model matches your intent. Add a short "here’s the style/shape I want" sample.',
+        suggestion: 'Add one concrete example of the output you want.',
+      })
+    }
+  }
+
+  // 9. Long/complex prompt with no structural delimiters (Anthropic: use XML
+  // tags or clear delimiters to separate instructions from context/data in
+  // longer prompts). Fire when the prompt is long yet has no XML tags, no
+  // markdown headings/fences, and no clearly labeled sections.
+  {
+    const words = text.trim().split(/\s+/).length
+    const hasXml = /<[a-zA-Z][\w-]*>[\s\S]*<\/[a-zA-Z][\w-]*>/.test(text) || /<[a-zA-Z][\w-]*\s*\/?>/.test(text)
+    const hasFence = /```/.test(text) || /(^|\n)#{1,6}\s/.test(text)
+    const hasTripleQuote = /"""|'''/.test(text)
+    // Labeled sections like "Context:", "Instructions:", "Task:" on their own.
+    const hasLabeledSection = /(^|\n)\s*[A-Z][A-Za-z ]{2,20}:\s*(\n|$)/.test(text)
+    const structured = hasXml || hasFence || hasTripleQuote || hasLabeledSection
+    if (!structured && words >= 60) {
+      flags.push({
+        category: 'nostructure',
+        start: 0,
+        end: 0, // whole-prompt flag
+        match: '',
+        label: 'No structure / delimiters',
+        explanation:
+          'Anthropic’s prompting guidance: in longer prompts, wrap context/data in XML tags (e.g. <context>…</context>) or use clear delimiters so the model can tell instructions apart from the material it should act on.',
+        suggestion: 'Wrap background/data in XML tags or labeled sections.',
+      })
     }
   }
 
