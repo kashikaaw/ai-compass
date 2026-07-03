@@ -1,14 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { History as HistoryIcon, Trash2, CornerDownLeft } from 'lucide-react'
-import type { HistoryItem } from '../lib/hooks'
+import type { HistoryItem, SessionTotal } from '../lib/hooks'
+import { SESSION_MODEL } from '../lib/hooks'
+import { formatUSD } from '../lib/pricing'
 
 interface Props {
   items: HistoryItem[]
   onSelect: (text: string) => void
   onClear: () => void
+  sessionTotal: SessionTotal
 }
 
-export function History({ items, onSelect, onClear }: Props) {
+export function History({ items, onSelect, onClear, sessionTotal }: Props) {
   if (items.length === 0) return null
 
   return (
@@ -28,10 +31,31 @@ export function History({ items, onSelect, onClear }: Props) {
           onClick={onClear}
           className="md-ghost md-focus inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium"
           style={{ color: 'var(--md-primary)' }}
+          aria-label="Clear recent prompts and reset the session total"
         >
           <Trash2 size={12} /> Clear
         </button>
       </div>
+
+      {/* running session cost total — accumulated locally, resets on Clear */}
+      {sessionTotal.count > 0 && (
+        <div
+          className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-2xl px-3.5 py-2.5"
+          style={{ background: 'var(--md-surface-container)', color: 'var(--text)' }}
+          title={`Rough estimate accumulated in this browser on ${SESSION_MODEL.name} (prompt + assumed reply). Resets when you clear history.`}
+        >
+          <span className="text-xs font-medium" style={{ color: 'var(--text-h)' }}>
+            {sessionTotal.count} prompt{sessionTotal.count === 1 ? '' : 's'} analyzed this session
+          </span>
+          <span aria-hidden style={{ color: 'var(--md-outline)' }}>·</span>
+          <span className="font-mono text-xs" style={{ color: 'var(--md-primary)' }}>
+            ~{formatUSD(sessionTotal.totalCost)} total
+          </span>
+          <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>
+            ({SESSION_MODEL.name}, est. · full call · local)
+          </span>
+        </div>
+      )}
 
       <ul className="flex flex-col gap-1.5">
         <AnimatePresence initial={false}>
