@@ -59,6 +59,102 @@ const STRIP_PHRASES: Array<[RegExp, string]> = [
   [/\bactually,?\b/gi, ''],
 ]
 
+// Common misspellings people make when typing fast. Deterministic, low-risk
+// word-for-word swaps only — this is not a real spellchecker, just enough to
+// catch the handful of typos that show up constantly in real prompts.
+const COMMON_TYPOS: Record<string, string> = {
+  continous: 'continuous',
+  recieve: 'receive',
+  seperate: 'separate',
+  occured: 'occurred',
+  definately: 'definitely',
+  untill: 'until',
+  wich: 'which',
+  becuase: 'because',
+  thier: 'their',
+  arguement: 'argument',
+  acheive: 'achieve',
+  buisness: 'business',
+  enviroment: 'environment',
+  managment: 'management',
+  goverment: 'government',
+  immediatly: 'immediately',
+  independant: 'independent',
+  priviledge: 'privilege',
+  concious: 'conscious',
+  existance: 'existence',
+  maintainance: 'maintenance',
+  neccessary: 'necessary',
+  occassion: 'occasion',
+  publically: 'publicly',
+  succesful: 'successful',
+  tommorow: 'tomorrow',
+  writting: 'writing',
+  reccommend: 'recommend',
+  calender: 'calendar',
+  collegue: 'colleague',
+  comittee: 'committee',
+  concensus: 'consensus',
+  wether: 'whether',
+  accomodate: 'accommodate',
+  begining: 'beginning',
+  belive: 'believe',
+  buget: 'budget',
+  compatable: 'compatible',
+  desicion: 'decision',
+  enviromental: 'environmental',
+  freqently: 'frequently',
+  gaurantee: 'guarantee',
+  gaurd: 'guard',
+  intergrate: 'integrate',
+  interupt: 'interrupt',
+  knowlege: 'knowledge',
+  lisence: 'license',
+  noticable: 'noticeable',
+  ocurrence: 'occurrence',
+  paralel: 'parallel',
+  posession: 'possession',
+  prefered: 'preferred',
+  proccess: 'process',
+  quantaty: 'quantity',
+  refered: 'referred',
+  relevent: 'relevant',
+  responsability: 'responsibility',
+  strenght: 'strength',
+  suprise: 'surprise',
+  usefull: 'useful',
+}
+
+/** Fix common typos while preserving the original capitalization style. */
+function fixCommonTypos(s: string): { text: string; fixed: boolean } {
+  let fixed = false
+  const text = s.replace(/\b[a-zA-Z]+\b/g, (word) => {
+    const lower = word.toLowerCase()
+    const correction = COMMON_TYPOS[lower]
+    if (!correction) return word
+    fixed = true
+    // Preserve capitalization: all-caps -> all-caps, first-cap -> first-cap.
+    if (word === word.toUpperCase()) return correction.toUpperCase()
+    if (word[0] === word[0].toUpperCase()) return correction[0].toUpperCase() + correction.slice(1)
+    return correction
+  })
+  return { text, fixed }
+}
+
+// Leading conversational openers that add no information — stripped only when
+// they open the whole prompt (mid-sentence "I need" is often load-bearing).
+const LEADING_OPENERS: RegExp[] = [/^i want\b\s*/i, /^i need\b\s*/i, /^i'd like\b\s*/i, /^i would like\b\s*/i]
+
+/** Strip a leading "I want"/"I need"-style opener, if present. */
+function stripLeadingOpener(s: string): { text: string; stripped: boolean } {
+  for (const re of LEADING_OPENERS) {
+    if (re.test(s)) {
+      return { text: s.replace(re, ''), stripped: true }
+    }
+  }
+  return { text: s, stripped: false }
+}
+
 // Wordy → tight replacements.
 const TIGHTEN: Array<[RegExp, string]> = [
   [/\bin order to\b/gi, 'to'],
@@ -356,6 +452,18 @@ export function ruleBasedRewrite(original: string): RewriteResult {
 
   // 2. Generic cleanup path.
   let s = trimmed
+
+  // Fix common typos first, before any structural changes.
+  const typoResult = fixCommonTypos(s)
+  s = typoResult.text
+  if (typoResult.fixed) changes.push('Fixed likely spelling mistakes.')
+
+  // Strip a leading "I want"/"I need"-style opener — pure conversational
+  // framing that adds no instruction the model needs.
+  const openerResult = stripLeadingOpener(s)
+  s = openerResult.text
+  if (openerResult.stripped) changes.push('Removed a conversational opener ("I want"/"I need") and led with the ask directly.')
+
   let strippedAny = false
   for (const [re, rep] of STRIP_PHRASES) {
     if (re.test(s)) {
@@ -388,7 +496,9 @@ export function ruleBasedRewrite(original: string): RewriteResult {
   }
 
   if (changes.length === 0) {
-    changes.push('Your prompt is already lean — no filler or structure issues found.')
+    changes.push(
+      'No filler, typos, or missing structure found by the rule-based checks. For deeper rephrasing (tone, clarity, wording it can\'t pattern-match), try AI Boost above.',
+    )
   }
 
   return { original, rewritten: s, archetype: null, changes, engine: 'rule-based' }

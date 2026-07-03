@@ -197,35 +197,68 @@ export function RewritePanel({
                   )}
                 </div>
               ) : (
-                // Trim-only path: genuine token savings — keep the green framing.
-                <div
-                  className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl p-3"
-                  style={{
-                    background:
-                      stats.delta >= 0
-                        ? 'color-mix(in srgb, var(--ok) 12%, transparent)'
-                        : 'color-mix(in srgb, var(--warn) 12%, transparent)',
-                  }}
-                >
-                  <Stat
-                    icon={<TrendingDown size={16} style={{ color: stats.delta >= 0 ? 'var(--ok)' : 'var(--warn)' }} />}
-                    main={`${stats.delta >= 0 ? '↓' : '↑'} ${Math.abs(stats.pct)}% tokens`}
-                    sub={`${stats.beforeTok} → ${stats.afterTok}`}
-                  />
-                  <Stat
-                    icon={<span style={{ color: 'var(--ok)' }}>$</span>}
-                    main={`${stats.costDelta >= 0 ? 'save ' : '+'}${formatUSD(Math.abs(stats.costDelta))}/call`}
-                    sub={`on ${HEADLINE_MODEL.name}`}
-                  />
-                  {result.engine === 'ai-boost' && (
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium"
+                // Trim-only path. Genuine savings keep the green framing; a
+                // true no-op (0% change) gets a neutral, honest framing instead
+                // of dressing up "nothing changed" as a win.
+                stats.delta === 0 && result.engine === 'rule-based' ? (
+                  <div
+                    className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl p-3"
+                    style={{ background: 'var(--md-surface-container-low)' }}
+                  >
+                    <Stat
+                      icon={<TrendingDown size={16} style={{ color: 'var(--text-dim)' }} />}
+                      main="No change"
+                      sub={`${stats.beforeTok} tokens either way`}
+                    />
+                    <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>
+                      The rule-based checks found nothing to trim.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!hasKey()) {
+                          onOpenKeyModal()
+                          return
+                        }
+                        onToggleAiBoost(true)
+                        void runOptimize()
+                      }}
+                      className="md-state md-focus ml-auto inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-medium transition-all duration-200"
                       style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                     >
-                      <Sparkles size={12} /> AI Boost
-                    </span>
-                  )}
-                </div>
+                      <Sparkles size={12} /> Try AI Boost
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl p-3"
+                    style={{
+                      background:
+                        stats.delta >= 0
+                          ? 'color-mix(in srgb, var(--ok) 12%, transparent)'
+                          : 'color-mix(in srgb, var(--warn) 12%, transparent)',
+                    }}
+                  >
+                    <Stat
+                      icon={<TrendingDown size={16} style={{ color: stats.delta >= 0 ? 'var(--ok)' : 'var(--warn)' }} />}
+                      main={`${stats.delta >= 0 ? '↓' : '↑'} ${Math.abs(stats.pct)}% tokens`}
+                      sub={`${stats.beforeTok} → ${stats.afterTok}`}
+                    />
+                    <Stat
+                      icon={<span style={{ color: 'var(--ok)' }}>$</span>}
+                      main={`${stats.costDelta >= 0 ? 'save ' : '+'}${formatUSD(Math.abs(stats.costDelta))}/call`}
+                      sub={`on ${HEADLINE_MODEL.name}`}
+                    />
+                    {result.engine === 'ai-boost' && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium"
+                        style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
+                      >
+                        <Sparkles size={12} /> AI Boost
+                      </span>
+                    )}
+                  </div>
+                )
               )
             )}
 
